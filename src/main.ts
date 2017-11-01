@@ -79,6 +79,20 @@ class DeleteTask implements Task {
   }
 }
 
+class CreatePlaylistTask implements Task {
+  constructor(private readonly playlist: Playlist) {}
+
+  async execute(): Promise<TaskResult> {
+    const filename = `${config.targetDir}/${this.playlist.name}.m3u8`;
+    const content = this.playlist.files.join('\n') + '\n';
+    await promisify(fs.writeFile)(filename, content, 'utf8');
+
+    return {
+      playlistsCreated: 1,
+    };
+  }
+}
+
 interface TaskResult {
   filesCreated?: number;
   filesDeleted?: number;
@@ -101,12 +115,16 @@ async function loadPlaylists(): Promise<Playlist[]> {
   const xml = await promisify(fs.readFile)(playlistsFile, 'utf8');
   const data = await parseXml(xml);
 
+  const prefix = `file://${config.libraryDir}/`;
+
   return data['rhythmdb-playlists'].playlist
     .filter(el => el.$.type === 'static')
     .map(el => {
       return {
         name: el.$.name,
-        files: el.location,
+        files: el.location.filter(f => f && f.startsWith(prefix))
+          .map(f => f.replace(prefix, ''))
+          .map(decodeURI),
       };
     });
 }
@@ -122,22 +140,14 @@ async function loadSelectedPlaylists(): Promise<Playlist[]> {
 
 
 function getSelectedFiles(playlists: Playlist[]): string[] {
-  let files = playlists.map(p => p.files).reduce((a, b) => a.concat(b), []);
-  files = Array.from(new Set(files)).sort();
-
-  const prefix = `file://${config.libraryDir}/`;
-
-  files = files.filter(f => f && f.startsWith(prefix))
-    .map(f => f.replace(prefix, ''))
-    .map(decodeURI);
-
-  return files;
+  const files = playlists.map(p => p.files).reduce((a, b) => a.concat(b), []);
+  return Array.from(new Set(files)).sort();
 }
 
 
-async function findFilesToDelete(files: string[]): Promise<string[]> {
+async function findFilesToDelete(files: string[], playlists: Playlist[]): Promise<string[]> {
   const targetFiles = await promisify(glob)('**/*', { cwd: config.targetDir, nodir: true });
-  return targetFiles.filter(f => files.indexOf(f) < 0);
+  return targetFiles.filter(f => files.indexOf(f) < 0 && !playlists.some(p => f === `${p.name}.m3u8`));
 }
 
 
@@ -145,8 +155,9 @@ async function createTasks(): Promise<Task[]> {
   const playlists = await loadSelectedPlaylists();
   const files = getSelectedFiles(playlists);
   const copyTasks: Task[] = files.map(file => new CopyTask(`${config.libraryDir}/${file}`, `${config.targetDir}/${file}`));
-  const deleteTasks: Task[] = (await findFilesToDelete(files)).map(file => new DeleteTask(`${config.targetDir}/${file}`));
-  return copyTasks.concat(deleteTasks);
+  const deleteTasks: Task[] = (await findFilesToDelete(files, playlists)).map(file => new DeleteTask(`${config.targetDir}/${file}`));
+  const createPlaylistTasks: Task[] = playlists.map(p => new CreatePlaylistTask(p));
+  return copyTasks.concat(deleteTasks).concat(createPlaylistTasks);
 }
 
 
