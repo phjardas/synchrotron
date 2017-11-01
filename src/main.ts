@@ -1,23 +1,28 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as glob from 'glob';
 import { promisify } from 'util';
-import * as xml2js from 'xml2js';
-import * as mkdirp from 'mkdirp';
 
+import * as glob from 'glob';
+import * as mkdirp from 'mkdirp';
+import * as xml2js from 'xml2js';
+import * as yargs from 'yargs';
+
+
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
 const copyFile = promisify(fs.copyFile);
 const deleteFile = promisify(fs.unlink);
 const getFileStats = promisify(fs.stat);
 
 
-const config = {
-  rhythmboxConfigDir: '/home/phjardas/.local/share/rhythmbox',
-  libraryDir: '/home/phjardas/Music',
-  targetDir: '/tmp/Music',
-  //  targetDir: '/media/phjardas/Music',
-  playlistNames: ['Music','Soundtrack'],
-};
+const config = yargs
+  .version(pkg.version)
+  .config()
+  .option('rhythmbox-config-dir', { demandOption: true, describe: 'path to the configuration directory of Rhythmbox, usually at `~/.local/share/rhythmbox`' })
+  .option('library-dir', { demandOption: true, describe: 'path to your music library, eg. `~/Music' })
+  .option('target-dir', { demandOption: true, describe: 'path to which to sync to, eg. `/media/USB-Stick`' })
+  .option('playlists', { array: true, describe: 'names of playlists to synchronize, omit to synchronize all playlists' })
+  .argv;
 
 
 interface Playlist {
@@ -108,8 +113,11 @@ async function loadPlaylists(): Promise<Playlist[]> {
 
 
 async function loadSelectedPlaylists(): Promise<Playlist[]> {
-  const playlists = await loadPlaylists();
-  return playlists.filter(p => config.playlistNames.indexOf(p.name) >= 0);
+  let playlists = await loadPlaylists();
+  if (config.playlists && config.playlists.length) {
+    playlists = playlists.filter(p => config.playlists.indexOf(p.name) >= 0);
+  }
+  return playlists;
 }
 
 
@@ -163,12 +171,15 @@ function mergeResults(results: TaskResult[]): TaskResult {
 
 async function main() {
   try {
+    console.log('syncing\n  playlists: %s\n  from: %s\n  to: %s', config.playlists.join(', '), config.libraryDir, config.targetDir);
+    console.log();
     console.log('analyzing...')
     const tasks = await createTasks();
     console.log('synchronizing %d files...', tasks.length);
     const results = await Promise.all(tasks.map(executeTask));
     const result = mergeResults(results);
     console.log('done.');
+    console.log();
     console.log(result);
   } catch (err) {
     console.error('ERROR:', err);
