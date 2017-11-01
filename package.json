@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "start": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "glob": "^7.1.2",
+    "mkdirp": "^0.5.1",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.47",
+    "@types/xml2js": "^0.4.0",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.6.1"
+  }
+}
