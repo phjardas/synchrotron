@@ -1,6 +1,6 @@
 {
-  "name": "rhythmsync",
-  "version": "1.0.0",
+  "name": "synchrotron",
+  "version": "0.1.0",
   "scripts": {
     "start": "ts-node src/main.ts"
   },
