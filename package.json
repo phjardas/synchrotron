@@ -1,8 +1,19 @@
 {
   "name": "synchrotron",
   "version": "0.1.0",
+  "description": "Synchronizes your music library with your music players",
+  "author": "Philipp Jardas <philipp@jardas.de>",
   "scripts": {
-    "start": "ts-node src/main.ts"
+    "start": "ts-node src/main.ts",
+    "compile": "tsc -p ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phjardas/synchrotron.git"
+  },
+  "main": "dist/main.js",
+  "engines": {
+    "node": "^7.0.0"
   },
   "dependencies": {
     "glob": "^7.1.2",
