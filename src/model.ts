@@ -4,6 +4,7 @@ export enum LogLevel {
 
 export interface Options {
   logLevel: LogLevel;
+  /** If set, the tasks are not actually executed but only log their intent. */
   dryRun: boolean;
   extensions: { [key: string]: string };
 }
