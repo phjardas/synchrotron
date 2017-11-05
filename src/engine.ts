@@ -1,30 +1,20 @@
-import * as glob from 'glob';
-import { promisify } from 'util';
-
-import { Engine, LibraryAdapter, TaskResult, Options, Playlist, Task } from './model';
-import { Registry } from './registry';
-import { CreatePlaylistTask, CopyTask, DeleteTask } from './tasks/index';
+import { Engine, LibraryAdapter, TaskResult, Options, Task, TargetAdapter } from './model';
 
 
 export class Synchrotron implements Engine {
-  private readonly libraryAdapters = new Registry<LibraryAdapter>();
+  static extensionPoints = ['library-adapter', 'target-adapter'];
+
+  libraryAdapter: LibraryAdapter;
+  targetAdapter: TargetAdapter;
 
   constructor(private readonly options: Options) {}
 
-  registerLibraryAdapter(libraryAdapter: LibraryAdapter) {
-    console.log('registering library adapter: %s', libraryAdapter.id);
-    this.libraryAdapters.register(libraryAdapter);
-  }
-
   async execute(): Promise<TaskResult> {
-    console.log('syncing\n  playlists: %s\n  from: %s\n  to: %s',
-      this.options.playlists.join(', '),
-      this.options.libraryDir,
-      this.options.targetDir);
+    console.log('starting synchronization');
     console.log();
     console.log('analyzing...')
     const tasks = await this.createTasks();
-    console.log('synchronizing %d files...', tasks.length);
+    console.log('running %d tasks...', tasks.length);
     const results = await Promise.all(tasks.map(t => this.executeTask(t)));
     const result = this.mergeResults(results);
     console.log('done.');
@@ -32,37 +22,28 @@ export class Synchrotron implements Engine {
     return result;
   }
 
-  private async loadSelectedPlaylists(): Promise<Playlist[]> {
-    let playlists = await this.libraryAdapters.get('rhythmbox').loadPlaylists(this.options);
-    if (this.options.playlists && this.options.playlists.length) {
-      playlists = playlists.filter(p => this.options.playlists.indexOf(p.name) >= 0);
-    }
-    return playlists;
-  }
-
-  private getSelectedFiles(playlists: Playlist[]): string[] {
-    const files = playlists.map(p => p.files).reduce((a, b) => a.concat(b), []);
-    return Array.from(new Set(files)).sort();
-  }
-
-  private async findFilesToDelete(files: string[], playlists: Playlist[]): Promise<string[]> {
-    const targetFiles = await promisify(glob)('**/*', { cwd: this.options.targetDir, nodir: true });
-    return targetFiles.filter(f => files.indexOf(f) < 0 && !playlists.some(p => f === `${p.name}.m3u8`));
-  }
-
 
   private async createTasks(): Promise<Task[]> {
-    const playlists = await this.loadSelectedPlaylists();
-    const files = this.getSelectedFiles(playlists);
-    const copyTasks: Task[] = files.map(file => new CopyTask(`${this.options.libraryDir}/${file}`, `${this.options.targetDir}/${file}`));
-    const deleteTasks: Task[] = (await this.findFilesToDelete(files, playlists)).map(file => new DeleteTask(`${this.options.targetDir}/${file}`));
-    const createPlaylistTasks: Task[] = playlists.map(p => new CreatePlaylistTask(p));
-    return copyTasks.concat(deleteTasks).concat(createPlaylistTasks);
+    const library = await this.libraryAdapter.loadLibrary();
+    const copyTasks = library.songs.map(song => this.targetAdapter.createCopyTask(song));
+    const createPlaylistTasks = library.playlists.map(p => this.targetAdapter.createPlaylistTask(p));
+    const deleteTasks = await this.targetAdapter.createDeleteTasks(library.songs);
+
+    return [
+      ...copyTasks,
+      ...createPlaylistTasks,
+      ...deleteTasks,
+    ];
   }
 
 
   private async executeTask(task: Task): Promise<TaskResult> {
-    return await task.execute(this.options);
+    if (this.options.dryRun) {
+      task.dryRun();
+      return Promise.resolve({});
+    }
+
+    return await task.execute();
   }
 
 

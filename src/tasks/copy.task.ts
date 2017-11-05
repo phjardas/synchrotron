@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-
 import * as mkdirp from 'mkdirp';
 
 import { Task, TaskResult } from "../model";
@@ -9,6 +8,7 @@ import { Task, TaskResult } from "../model";
 
 const copyFile = promisify(fs.copyFile);
 const getFileStats = promisify(fs.stat);
+const mkdirs = promisify(mkdirp);
 
 
 export class CopyTask implements Task {
@@ -34,12 +34,16 @@ export class CopyTask implements Task {
     }
 
     const p = path.parse(this.target);
-    await promisify(mkdirp)(p.dir);
+    await mkdirs(p.dir);
     await copyFile(this.source, this.target);
     return {
       filesCreated: 1,
       bytesTransferred: sourceStats.size,
       timeMillis: Date.now() - startedAt,
     };
+  }
+
+  dryRun() {
+    console.log('COPY %s --> %s', this.source, this.target);
   }
 }

@@ -1,35 +1,47 @@
+export enum LogLevel {
+  DEBUG, INFO, ERROR
+}
+
 export interface Options {
-  readonly rhythmboxConfigDir: string;
-  readonly libraryDir: string;
-  readonly targetDir: string;
-  readonly playlists?: string[];
+  logLevel: LogLevel;
+  dryRun: boolean;
+  extensions: { [key: string]: string };
+}
+
+export interface Library {
+  readonly songs: Song[];
+  readonly playlists: Playlist[];
+}
+
+export interface Song {
+  readonly absoluteFilename: string;
+  readonly relativeFilename: string;
 }
 
 export interface Playlist {
   readonly name: string;
-  readonly files: string[];
+  readonly songs: Song[];
 }
 
-export interface Pluggable {
-  readonly id: string;
-  readonly name: string;
-  readonly description: string;
+export interface LibraryAdapter {
+  loadLibrary(): Promise<Library>;
 }
 
-export interface Plugin extends Pluggable {
-  applyTo(engine: Engine): void;
-}
-
-export interface LibraryAdapter extends Pluggable {
-  loadPlaylists(options: Options): Promise<Playlist[]>;
+export interface TargetAdapter {
+  createCopyTask(song: Song): Task;
+  createPlaylistTask(playlist: Playlist): Task;
+  createDeleteTasks(songs: Song[]): Task[] | Promise<Task[]>;
 }
 
 export interface Engine {
-  registerLibraryAdapter(libraryAdapter: LibraryAdapter): void;
+  libraryAdapter: LibraryAdapter;
+  targetAdapter: TargetAdapter;
+  execute(): Promise<TaskResult>;
 }
 
 export interface Task {
-  execute(options: Options): Promise<TaskResult>;
+  execute(): Promise<TaskResult>;
+  dryRun(): void;
 }
 
 export interface TaskResult {

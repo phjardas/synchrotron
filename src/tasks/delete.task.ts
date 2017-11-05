@@ -17,4 +17,8 @@ export class DeleteTask implements Task {
       filesDeleted: 1,
     };
   }
+
+  dryRun() {
+    console.log('DELETE: %s', this.file);
+  }
 }

@@ -1,24 +1,26 @@
 import * as fs from 'fs';
 import * as yargs from 'yargs';
+import { Options, LogLevel } from './model';
 
-import { Options } from './model';
 
-export function parseOptions(args: string[]): Options {
+export function parseMainOptions(args: string[]): Options {
+  const argv = createOptionsParser(args).argv;
+  return {
+    logLevel: argv.debug ? LogLevel.DEBUG : (argv.quiet ? LogLevel.ERROR : LogLevel.INFO),
+    extensions: argv,
+    dryRun: argv.dryRun || false,
+  }
+}
+
+export function createOptionsParser(args: string[]): yargs.Arguments {
   const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
-  const options = yargs(args)
+  return yargs(args)
     .version(pkg.version)
-    .config()
-    .option('rhythmbox-config-dir', { demandOption: true, describe: 'path to the configuration directory of Rhythmbox, usually at `~/.local/share/rhythmbox`' })
-    .option('library-dir', { demandOption: true, describe: 'path to your music library, eg. `~/Music' })
-    .option('target-dir', { demandOption: true, describe: 'path to which to sync to, eg. `/media/USB-Stick`' })
-    .option('playlists', { array: true, describe: 'names of playlists to synchronize, omit to synchronize all playlists' })
-    .argv;
-
-  return {
-    rhythmboxConfigDir: options.rhythmboxConfigDir,
-    libraryDir: options.libraryDir,
-    targetDir: options.targetDir,
-    playlists: options.playlists,
-  };
+    .option('verbose', { alias: 'v', boolean: true })
+    .option('quiet', { alias: 'q', boolean: true })
+    .option('dry-run', { boolean: true })
+    .option('library-adapter', { demandOption: true })
+    .option('target-adapter', { demandOption: true })
+    .config();
 }
