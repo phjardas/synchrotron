@@ -1,3 +1,5 @@
+import * as bytes from 'bytes';
+import * as duration from 'humanize-duration';
 import { Engine, LibraryAdapter, TaskResult, EngineOptions, Task, TargetAdapter } from './model';
 
 
@@ -22,8 +24,7 @@ export class Synchrotron implements Engine {
     logger.debug('analyzing...')
     const groups = await this.createTaskGroups();
     const results = await this.executeTaskGroups(groups);
-    logger.info('done.');
-    logger.info(results);
+    this.printResults(results);
     return results;
   }
 
@@ -48,6 +49,7 @@ export class Synchrotron implements Engine {
   private async executeTaskGroups(groups: TaskGroup[]): Promise<TaskResult> {
     const { logger } = this.options;
     let results: TaskResult[] = [];
+    const startedAt = Date.now();
 
     for (const { label, tasks } of groups) {
       const progress = logger.startProgress(label, tasks.length);
@@ -61,7 +63,7 @@ export class Synchrotron implements Engine {
       progress.terminate();
     }
 
-    return this.mergeResults(results);
+    return { ...this.mergeResults(results), timeMillis: Date.now() - startedAt };
   }
 
 
@@ -86,5 +88,14 @@ export class Synchrotron implements Engine {
       bytesTransferred: (a.bytesTransferred || 0) + (b.bytesTransferred || 0),
       timeMillis: (a.timeMillis || 0) + (b.timeMillis || 0),
     }), {});
+  }
+
+  private printResults(results: TaskResult) {
+    const { logger } = this.options;
+
+    logger.info('Files: %d created, %d unchanged, %d deleted', results.filesCreated, results.filesUnchanged, results.filesDeleted);
+    logger.info('Playlists: %d created, %d unchanged, %d deleted', results.playlistsCreated, results.playlistsUnchanged, results.playlistsDeleted);
+    logger.info('Total transferred: %s', bytes(results.bytesTransferred));
+    logger.info('Total duration: %s', duration(results.timeMillis));
   }
 }

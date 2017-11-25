@@ -13,7 +13,6 @@ export class CopyTask implements Task {
   constructor(private readonly source: string, private readonly target: string) { }
 
   async execute(): Promise<TaskResult> {
-    const startedAt = Date.now();
     const sourceStats = await getFileStats(this.source);
 
     try {
@@ -23,7 +22,6 @@ export class CopyTask implements Task {
         if (sourceStats.size === targetStats.size) {
           return {
             filesUnchanged: 1,
-            timeMillis: Date.now() - startedAt,
           };
         }
       }
@@ -37,7 +35,6 @@ export class CopyTask implements Task {
     return {
       filesCreated: 1,
       bytesTransferred: sourceStats.size,
-      timeMillis: Date.now() - startedAt,
     };
   }
 
