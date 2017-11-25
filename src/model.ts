@@ -1,12 +1,16 @@
-export enum LogLevel {
-  DEBUG, INFO, ERROR
-}
+import { Logger } from './logger';
+export { Logger } from './logger';
 
 export interface Options {
-  logLevel: LogLevel;
+  verbose: boolean;
+  quiet: boolean;
   /** If set, the tasks are not actually executed but only log their intent. */
   dryRun: boolean;
   extensions: { [key: string]: string };
+}
+
+export interface EngineOptions extends Options {
+  logger: Logger;
 }
 
 export interface Library {

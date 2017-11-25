@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as yargs from 'yargs';
-import { Options, LogLevel } from './model';
+import { Options } from './model';
 
 
 export function parseMainOptions(args: string[]): Options {
   const argv = createOptionsParser(args).argv;
   return {
-    logLevel: argv.debug ? LogLevel.DEBUG : (argv.quiet ? LogLevel.ERROR : LogLevel.INFO),
+    verbose: argv.verbose,
+    quiet: argv.quiet,
     extensions: argv,
     dryRun: argv.dryRun || false,
   }

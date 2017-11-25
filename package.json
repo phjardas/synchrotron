@@ -18,11 +18,13 @@
   "dependencies": {
     "glob": "^7.1.2",
     "mkdirp": "^0.5.1",
+    "progress": "^2.0.0",
     "tmp": "0.0.33",
     "yargs": "^10.0.3"
   },
   "devDependencies": {
     "@types/node": "^8.0.47",
+    "@types/progress": "^2.0.0",
     "@types/xml2js": "^0.4.0",
     "@types/yargs": "^8.0.2",
     "ts-node": "^3.3.0",

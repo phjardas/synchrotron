@@ -1,4 +1,10 @@
-import { Engine, LibraryAdapter, TaskResult, Options, Task, TargetAdapter } from './model';
+import { Engine, LibraryAdapter, TaskResult, EngineOptions, Task, TargetAdapter } from './model';
+
+
+interface TaskGroup {
+  readonly label: string;
+  readonly tasks: Task[];
+}
 
 
 export class Synchrotron implements Engine {
@@ -7,33 +13,55 @@ export class Synchrotron implements Engine {
   libraryAdapter: LibraryAdapter;
   targetAdapter: TargetAdapter;
 
-  constructor(private readonly options: Options) {}
+  constructor(private readonly options: EngineOptions) {}
 
   async execute(): Promise<TaskResult> {
-    console.log('starting synchronization');
-    console.log();
-    console.log('analyzing...')
-    const tasks = await this.createTasks();
-    console.log('running %d tasks...', tasks.length);
-    const results = await Promise.all(tasks.map(t => this.executeTask(t)));
-    const result = this.mergeResults(results);
-    console.log('done.');
-    console.log();
-    return result;
+    const { logger } = this.options;
+
+    logger.debug('starting synchronization');
+    logger.debug('analyzing...')
+    const groups = await this.createTaskGroups();
+    const results = await this.executeTaskGroups(groups);
+    logger.info('done.');
+    logger.info(results);
+    return results;
   }
 
 
-  private async createTasks(): Promise<Task[]> {
+  private async createTaskGroups(): Promise<TaskGroup[]> {
+    const groups: TaskGroup[] = [];
+
     const library = await this.libraryAdapter.loadLibrary();
     const copyTasks = library.songs.map(song => this.targetAdapter.createCopyTask(song));
-    const createPlaylistTasks = library.playlists.map(p => this.targetAdapter.createPlaylistTask(p));
-    const deleteTasks = await this.targetAdapter.createDeleteTasks(library.songs);
+    if (copyTasks.length) groups.push({ label: 'synchronizing', tasks: copyTasks });
 
-    return [
-      ...copyTasks,
-      ...createPlaylistTasks,
-      ...deleteTasks,
-    ];
+    const createPlaylistTasks = library.playlists.map(p => this.targetAdapter.createPlaylistTask(p));
+    if (createPlaylistTasks.length) groups.push({ label: 'playlists', tasks: createPlaylistTasks });
+    
+    const deleteTasks = await this.targetAdapter.createDeleteTasks(library.songs);
+    if (deleteTasks.length) groups.push({ label: 'deleting', tasks: deleteTasks });
+
+    return groups;
+  }
+
+
+  private async executeTaskGroups(groups: TaskGroup[]): Promise<TaskResult> {
+    const { logger } = this.options;
+    let results: TaskResult[] = [];
+
+    for (const { label, tasks } of groups) {
+      const progress = logger.startProgress(label, tasks.length);
+      const groupResults = await Promise.all(tasks.map(async t => {
+        const result = await this.executeTask(t);
+        progress.tick();
+        return result;
+      }));
+      results = [...results, ...groupResults];
+
+      progress.terminate();
+    }
+
+    return this.mergeResults(results);
   }
 
 

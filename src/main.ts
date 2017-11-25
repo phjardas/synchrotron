@@ -1,4 +1,5 @@
 import { parseMainOptions, createOptionsParser } from './options';
+import { createLogger } from './logger';
 import { Engine } from './model';
 import { Synchrotron } from './engine';
 import { pluginManager } from './plugins';
@@ -19,6 +20,8 @@ async function createEngine(args: string[]): Promise<Engine> {
     createOptionsParser(args)
   ).argv;
 
+  opts.logger = createLogger(opts);
+
   return extensions.reduce(
     (engine, ex) => ex.extend(engine, opts),
     new Synchrotron(opts)
@@ -29,10 +32,9 @@ async function createEngine(args: string[]): Promise<Engine> {
 async function main() {
   try {
     const engine = await createEngine(process.argv);
-    const results = await engine.execute();
-    console.log(results);
+    await engine.execute();
   } catch (err) {
-    console.error('ERROR:', err);
+    process.exit(err.code || 1);
   }
 }
 
