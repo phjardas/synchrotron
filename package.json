@@ -5,7 +5,8 @@
   "author": "Philipp Jardas <philipp@jardas.de>",
   "scripts": {
     "start": "ts-node src/main.ts",
-    "compile": "tsc --project . --declaration"
+    "compile": "tsc --project . --declaration",
+    "prepublishOnly": "npm run compile"
   },
   "repository": {
     "type": "git",
