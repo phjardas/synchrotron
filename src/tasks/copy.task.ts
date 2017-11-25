@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import * as mkdirp from 'mkdirp';
 
+import { mkdirs, copyFile } from './helpers';
 import { Task, TaskResult } from "../model";
 
 
-const copyFile = promisify(fs.copyFile);
 const getFileStats = promisify(fs.stat);
-const mkdirs = promisify(mkdirp);
 
 
 export class CopyTask implements Task {

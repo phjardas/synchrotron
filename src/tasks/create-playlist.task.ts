@@ -1,13 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
-import { promisify } from 'util';
-import * as mkdirp from 'mkdirp';
 
+import { mkdirs, writeFile } from './helpers';
 import { Task, TaskResult, Playlist } from "../model";
-
-
-const writeFile = promisify(fs.writeFile);
-const mkdirs = promisify(mkdirp);
 
 
 export class CreatePlaylistTask implements Task {

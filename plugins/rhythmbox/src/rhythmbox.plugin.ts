@@ -3,8 +3,8 @@ import * as xml2js from 'xml2js';
 import { promisify } from 'util';
 import { Argv, Arguments } from 'yargs';
 
-import { Engine, LibraryAdapter, Playlist, Library, Song } from '../model';
-import { Plugin, Extension } from '../plugin';
+import { Engine, LibraryAdapter, Playlist, Library, Song } from '../../../src/model';
+import { Plugin, Extension } from '../../../src/plugin';
 
 
 class RhythmboxLibraryAdapterExtension implements Extension {

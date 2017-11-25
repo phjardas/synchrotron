@@ -37,13 +37,13 @@ export class Synchrotron implements Engine {
   }
 
 
-  private async executeTask(task: Task): Promise<TaskResult> {
+  private executeTask(task: Task): Promise<TaskResult> {
     if (this.options.dryRun) {
       task.dryRun();
       return Promise.resolve({});
     }
 
-    return await task.execute();
+    return task.execute();
   }
 
 
