@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Plugin, Extension } from './plugin';
 
 
@@ -12,9 +13,22 @@ class PluginManagerImpl implements PluginManager {
   private _plugins: Promise<Plugin[]>;
   private _extensions: Promise<Extension[]>;
 
+  private async loadPlugin(path: string): Promise<Plugin> {
+    try {
+      const p = require(path);
+      return p.default || p;
+    } catch (err) {
+      console.error(`Error loading plugin from ${path}:`, err);
+    }
+  }
+
   private discoverPlugins(): Promise<Plugin[]> {
-    // FIXME discover plugins
-    return Promise.resolve([]);
+    // FIXME resolve plugins
+    const plugins = ['filesystem', 'rhythmbox']
+      .map(pluginId => path.resolve(__dirname, '..', '..', `synchrotron-${pluginId}-plugin`, 'dist'))
+      .map(path => this.loadPlugin(path));
+
+    return Promise.all(plugins);
   }
 
   get plugins(): Promise<Plugin[]> {

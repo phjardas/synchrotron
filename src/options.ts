@@ -22,6 +22,6 @@ export function createOptionsParser(args: string[]): yargs.Arguments {
     .option('quiet', { alias: 'q', boolean: true })
     .option('dry-run', { boolean: true })
     .option('library-adapter', { demandOption: true })
-    .option('target-adapter', { demandOption: true })
+    .option('target-adapter', { default: 'filesystem' })
     .config();
 }

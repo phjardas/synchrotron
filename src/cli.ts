@@ -31,7 +31,14 @@ async function createEngine(args: string[]): Promise<Engine> {
 
 export async function main(argv: string[] = process.argv) {
   try {
-    const engine = await createEngine(argv);
+    let engine;
+    try {
+      engine = await createEngine(argv);
+    } catch (err) {
+      console.error('Error creating Synchrotron engine:', err);
+      throw err;
+    }
+
     await engine.execute();
   } catch (err) {
     process.exit(err.code || 1);
