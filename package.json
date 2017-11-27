@@ -1,5 +1,5 @@
 {
-  "name": "@synchrotron/synchrotron",
+  "name": "synchrotron",
   "version": "0.1.0",
   "description": "Synchronizes your music library with your music players",
   "author": "Philipp Jardas <philipp@jardas.de>",
