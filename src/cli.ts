@@ -29,9 +29,9 @@ async function createEngine(args: string[]): Promise<Engine> {
 }
 
 
-async function main() {
+export async function main(argv: string[] = process.argv) {
   try {
-    const engine = await createEngine(process.argv);
+    const engine = await createEngine(argv);
     await engine.execute();
   } catch (err) {
     process.exit(err.code || 1);

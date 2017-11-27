@@ -1,8 +1,5 @@
 import { Plugin, Extension } from './plugin';
 
-import rhythmbox from '../plugins/rhythmbox/src/rhythmbox.plugin';
-import filesystem from '../plugins/filesystem/src/filesystem.plugin';
-
 
 export interface PluginManager {
   readonly plugins: Promise<Plugin[]>;
@@ -15,13 +12,14 @@ class PluginManagerImpl implements PluginManager {
   private _plugins: Promise<Plugin[]>;
   private _extensions: Promise<Extension[]>;
 
-  private loadPlugins(): Promise<Plugin[]> {
-    return Promise.resolve([rhythmbox, filesystem]);
+  private discoverPlugins(): Promise<Plugin[]> {
+    // FIXME discover plugins
+    return Promise.resolve([]);
   }
 
   get plugins(): Promise<Plugin[]> {
     if (!this._plugins) {
-      this._plugins = this.loadPlugins();
+      this._plugins = this.discoverPlugins();
     }
 
     return this._plugins
