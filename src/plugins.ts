@@ -1,7 +1,7 @@
-import { Plugin, Extension } from '../plugin';
+import { Plugin, Extension } from './plugin';
 
-import rhythmbox from '../../plugins/rhythmbox/src/rhythmbox.plugin';
-import filesystem from './filesystem.plugin';
+import rhythmbox from '../plugins/rhythmbox/src/rhythmbox.plugin';
+import filesystem from '../plugins/filesystem/src/filesystem.plugin';
 
 
 export interface PluginManager {

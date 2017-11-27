@@ -2,9 +2,9 @@ import * as glob from 'glob';
 import { promisify } from 'util';
 import { Arguments } from 'yargs';
 
-import { Plugin, Extension } from '../plugin';
-import { Engine, TargetAdapter, Song, Task, Playlist } from '../model';
-import { CopyTask, DeleteTask, CreatePlaylistTask } from '../tasks';
+import { Engine, Task, TargetAdapter, Playlist, Song } from '../../../src/model';
+import { Plugin, Extension } from '../../../src/plugin';
+import { CopyTask, DeleteTask, CreatePlaylistTask } from '../../../src/tasks';
 
 
 class FilesystemTargetAdapterExtension implements Extension {
@@ -19,7 +19,7 @@ class FilesystemTargetAdapterExtension implements Extension {
     const opts: FilesystemTargetAdapterOptions = {
       targetDir: args['target-dir'],
     };
-    
+
     engine.targetAdapter = new FilesystemTargetAdapter(opts);
     return engine;
   }
@@ -32,7 +32,7 @@ interface FilesystemTargetAdapterOptions {
 
 
 class FilesystemTargetAdapter implements TargetAdapter {
-  constructor(private opts: FilesystemTargetAdapterOptions) {}
+  constructor(private opts: FilesystemTargetAdapterOptions) { }
 
   createCopyTask(song: Song): Task {
     const target = `${this.opts.targetDir}/${song.relativeFilename}`;
