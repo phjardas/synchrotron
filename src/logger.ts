@@ -6,7 +6,7 @@ export interface Logger {
   info(message: any, ...args: any[]): void;
   warn(message: any, ...args: any[]): void;
   error(message: any, ...args: any[]): void;
-  startProgress(task: string, total: number): ProgressBar;
+  startProgress(total: number): ProgressBar;
 }
 
 
@@ -63,8 +63,17 @@ export function createLogger(options: LogOptions): Logger {
     warn: createLogMethod(LogLevel.warn, level),
     error: createLogMethod(LogLevel.error, level),
 
-    startProgress(task: string, total: number) {
-      return new ProgressBar(`${task} :current/:total [:bar] :percent :rate/s :etas`, { total, width: 20 });
+    startProgress(total: number) {
+      const pattern = '[:bar] :task :percent :rate/s :etas';
+      const cols = process.stdout.columns;
+      const width = cols - 40;
+      
+      return new ProgressBar(pattern, {
+        total,
+        width,
+        complete: '=',
+        incomplete: ' ',
+      });
     },
   };
 }

@@ -2,14 +2,17 @@ import { Task, TaskResult, Playlist, TargetAdapter } from "../model";
 
 
 export class CreatePlaylistTask implements Task {
+  public readonly filename: string;
+
   constructor(
     private readonly playlist: Playlist,
     private readonly targetAdapter: TargetAdapter
-  ) {}
+  ) {
+    this.filename = `${this.playlist.name}.m3u8`;
+  }
 
   async execute(): Promise<TaskResult> {
-    const file = `${this.playlist.name}.m3u8`;
-    const out = await this.targetAdapter.createWriter(file, { encoding: 'utf8' });
+    const out = await this.targetAdapter.createWriter(this.filename, { encoding: 'utf8' });
     const content = this.playlist.songs.map(s => s.originalPath).join('\n') + '\n';
     
     await new Promise((resolve, reject) => {

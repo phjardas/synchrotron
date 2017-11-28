@@ -45,7 +45,7 @@ export class Synchrotron implements Engine {
     const createPlaylistTasks = library.playlists.map(p => new CreatePlaylistTask(p, this.targetAdapter));
     if (createPlaylistTasks.length) groups.push({ label: 'playlists', tasks: createPlaylistTasks });
     
-    const deleteFiles = await this.targetAdapter.getFilesToDelete(library.songs);
+    const deleteFiles = await this.targetAdapter.getFilesToDelete([...library.songs.map(s => s.originalPath), ...createPlaylistTasks.map(t => t.filename)]);
     if (deleteFiles.length) groups.push({ label: 'deleting', tasks: deleteFiles.map(f => new DeleteTask(f, this.targetAdapter)) });
 
     return groups;
@@ -54,20 +54,20 @@ export class Synchrotron implements Engine {
 
   private async executeTaskGroups(groups: TaskGroup[]): Promise<TaskResult> {
     const { logger } = this.options;
+    let progress = this.options.noProgress ? null : logger.startProgress(groups.reduce((a, g) => a + g.tasks.length, 0));
     let results: TaskResult[] = [];
     const startedAt = Date.now();
 
     for (const { label, tasks } of groups) {
-      const progress = logger.startProgress(label, tasks.length);
       const groupResults = await Promise.all(tasks.map(async t => {
         const result = await this.executeTask(t);
-        progress.tick();
+        progress && progress.tick(1, { task: label });
         return result;
       }));
       results = [...results, ...groupResults];
-
-      progress.terminate();
     }
+
+    progress && progress.terminate();
 
     return { ...this.mergeResults(results), timeMillis: Date.now() - startedAt };
   }
@@ -99,6 +99,7 @@ export class Synchrotron implements Engine {
   private printResults(results: TaskResult) {
     const { logger } = this.options;
 
+    logger.info('\n');
     logger.info('Files: %d created, %d unchanged, %d deleted', results.filesCreated, results.filesUnchanged, results.filesDeleted);
     logger.info('Playlists: %d created, %d unchanged, %d deleted', results.playlistsCreated, results.playlistsUnchanged, results.playlistsDeleted);
     logger.info('Total transferred: %s', bytes(results.bytesTransferred));

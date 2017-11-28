@@ -8,6 +8,7 @@ export interface Options {
   quiet: boolean;
   /** If set, the tasks are not actually executed but only log their intent. */
   dryRun: boolean;
+  noProgress: boolean;
   extensions: { [key: string]: string };
 }
 
@@ -49,7 +50,7 @@ export interface TargetAdapter {
   createWriter(path: string, options?: {
     encoding: string;
   }): Promise<Writable>;
-  getFilesToDelete(songs: Song[]): Promise<string[]>;
+  getFilesToDelete(files: string[]): Promise<string[]>;
   deleteFile(path: string): Promise<void>;
 }
 

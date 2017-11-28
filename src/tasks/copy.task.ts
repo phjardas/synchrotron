@@ -9,19 +9,14 @@ export class CopyTask implements Task {
 
   async execute(): Promise<TaskResult> {
     const sourceStats = await this.song.fileStats;
+    const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
 
-    try {
-      const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
-
-      if (sourceStats.exists && targetStats.exists) {
-        if (sourceStats.size === targetStats.size) {
-          return {
-            filesUnchanged: 1,
-          };
-        }
+    if (sourceStats.exists && targetStats.exists) {
+      if (sourceStats.size === targetStats.size) {
+        return {
+          filesUnchanged: 1,
+        };
       }
-    } catch (err) {
-      if (err.code !== 'ENOENT') throw err;
     }
 
     const [ reader, writer ] = await Promise.all([

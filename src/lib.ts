@@ -13,11 +13,18 @@ export abstract class FileSystemSong implements Song {
   ) {}
 
   get fileStats(): Promise<FileStats> {
-    return getFileStats(this.absoluteFilename)
-      .then(stats => ({
-        get exists() { return stats.isFile(); },
-        size: stats.size,
-      }));
+    return (async () => {
+      try {
+        const stats = await getFileStats(this.absoluteFilename);
+        return {
+          get exists() { return stats.isFile(); },
+          size: stats.size,
+        };
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+        return { exists: false };
+      }
+    })();
   }
 
   async open(): Promise<Readable> {
