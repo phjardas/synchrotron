@@ -1,22 +1,23 @@
-import * as path from 'path';
-
-import { mkdirs, writeFile } from './helpers';
-import { Task, TaskResult, Playlist } from "../model";
+import { Task, TaskResult, Playlist, TargetAdapter } from "../model";
 
 
 export class CreatePlaylistTask implements Task {
-  private readonly filename: string;
-
-  constructor(private readonly playlist: Playlist, targetDir: string) {
-    this.filename = `${targetDir}/${this.playlist.name}.m3u8`;
-  }
+  constructor(
+    private readonly playlist: Playlist,
+    private readonly targetAdapter: TargetAdapter
+  ) {}
 
   async execute(): Promise<TaskResult> {
-    const p = path.parse(this.filename);
-    await mkdirs(p.dir);
-
-    const content = this.playlist.songs.map(s => s.relativeFilename).join('\n') + '\n';
-    await writeFile(this.filename, content, 'utf8');
+    const file = `${this.playlist.name}.m3u8`;
+    const out = await this.targetAdapter.createWriter(file, { encoding: 'utf8' });
+    const content = this.playlist.songs.map(s => s.originalPath).join('\n') + '\n';
+    
+    await new Promise((resolve, reject) => {
+      out.on('finish', resolve);
+      out.on('error', reject);
+      out.write(content);
+      out.end();
+    });
 
     return {
       playlistsCreated: 1,
@@ -24,6 +25,6 @@ export class CreatePlaylistTask implements Task {
   }
 
   dryRun() {
-    console.log('PLAYLIST: %s', this.filename);
+    console.log(`PLAYLIST: ${this.playlist.name}.m3u8`);
   }
 }

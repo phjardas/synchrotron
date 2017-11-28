@@ -1,24 +1,19 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { promisify } from 'util';
-
-import { mkdirs, copyFile } from './helpers';
-import { Task, TaskResult } from "../model";
-
-
-const getFileStats = promisify(fs.stat);
+import { Task, TaskResult, TargetAdapter, Song } from "../model";
 
 
 export class CopyTask implements Task {
-  constructor(private readonly source: string, private readonly target: string) { }
+  constructor(
+    private readonly song: Song,
+    private readonly targetAdapter: TargetAdapter
+  ) {}
 
   async execute(): Promise<TaskResult> {
-    const sourceStats = await getFileStats(this.source);
+    const sourceStats = await this.song.fileStats;
 
     try {
-      const targetStats = await getFileStats(this.target);
+      const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
 
-      if (sourceStats.isFile && targetStats.isFile) {
+      if (sourceStats.exists && targetStats.exists) {
         if (sourceStats.size === targetStats.size) {
           return {
             filesUnchanged: 1,
@@ -29,9 +24,17 @@ export class CopyTask implements Task {
       if (err.code !== 'ENOENT') throw err;
     }
 
-    const p = path.parse(this.target);
-    await mkdirs(p.dir);
-    await copyFile(this.source, this.target);
+    const [ reader, writer ] = await Promise.all([
+      this.song.open(),
+      this.targetAdapter.createWriter(this.song.originalPath)
+    ]);
+
+    await new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+      reader.pipe(writer);
+    });
+
     return {
       filesCreated: 1,
       bytesTransferred: sourceStats.size,
@@ -39,6 +42,6 @@ export class CopyTask implements Task {
   }
 
   dryRun() {
-    console.log('COPY %s --> %s', this.source, this.target);
+    console.log('SYNC: %s', this.song.originalPath);
   }
 }

@@ -1,4 +1,6 @@
 import { Logger } from './logger';
+import { Readable, Writable } from 'stream';
+
 export { Logger } from './logger';
 
 export interface Options {
@@ -18,9 +20,19 @@ export interface Library {
   readonly playlists: Playlist[];
 }
 
+export interface FileStats {
+  readonly exists: boolean;
+  readonly size?: number;
+}
+
 export interface Song {
-  readonly absoluteFilename: string;
-  readonly relativeFilename: string;
+  readonly artist?: string;
+  readonly albumArtist?: string;
+  readonly album?: string;
+  readonly title?: string;
+  readonly originalPath: string;
+  readonly fileStats: Promise<FileStats>;
+  open(): Promise<Readable>;
 }
 
 export interface Playlist {
@@ -33,9 +45,12 @@ export interface LibraryAdapter {
 }
 
 export interface TargetAdapter {
-  createCopyTask(song: Song): Task;
-  createPlaylistTask(playlist: Playlist): Task;
-  createDeleteTasks(songs: Song[]): Task[] | Promise<Task[]>;
+  getFileStats(path: string): Promise<FileStats>;
+  createWriter(path: string, options?: {
+    encoding: string;
+  }): Promise<Writable>;
+  getFilesToDelete(songs: Song[]): Promise<string[]>;
+  deleteFile(path: string): Promise<void>;
 }
 
 export interface Engine {

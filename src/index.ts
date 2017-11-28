@@ -1,3 +1,3 @@
 export * from './model';
 export * from './plugin';
-export * from './tasks';
+export * from './lib';

@@ -1,6 +1,7 @@
 import * as bytes from 'bytes';
 import * as duration from 'humanize-duration';
 import { Engine, LibraryAdapter, TaskResult, EngineOptions, Task, TargetAdapter } from './model';
+import { CopyTask, CreatePlaylistTask, DeleteTask } from './tasks';
 
 
 interface TaskGroup {
@@ -20,12 +21,17 @@ export class Synchrotron implements Engine {
   async execute(): Promise<TaskResult> {
     const { logger } = this.options;
 
-    logger.debug('starting synchronization');
-    logger.debug('analyzing...')
-    const groups = await this.createTaskGroups();
-    const results = await this.executeTaskGroups(groups);
-    this.printResults(results);
-    return results;
+    try {
+      logger.debug('starting synchronization');
+      logger.debug('analyzing...')
+      const groups = await this.createTaskGroups();
+      const results = await this.executeTaskGroups(groups);
+      this.printResults(results);
+      return results;
+    } catch (err) {
+      logger.error('Error:', err);
+      throw err;
+    }
   }
 
 
@@ -33,14 +39,14 @@ export class Synchrotron implements Engine {
     const groups: TaskGroup[] = [];
 
     const library = await this.libraryAdapter.loadLibrary();
-    const copyTasks = library.songs.map(song => this.targetAdapter.createCopyTask(song));
+    const copyTasks = library.songs.map(song => new CopyTask(song, this.targetAdapter));
     if (copyTasks.length) groups.push({ label: 'synchronizing', tasks: copyTasks });
 
-    const createPlaylistTasks = library.playlists.map(p => this.targetAdapter.createPlaylistTask(p));
+    const createPlaylistTasks = library.playlists.map(p => new CreatePlaylistTask(p, this.targetAdapter));
     if (createPlaylistTasks.length) groups.push({ label: 'playlists', tasks: createPlaylistTasks });
     
-    const deleteTasks = await this.targetAdapter.createDeleteTasks(library.songs);
-    if (deleteTasks.length) groups.push({ label: 'deleting', tasks: deleteTasks });
+    const deleteFiles = await this.targetAdapter.getFilesToDelete(library.songs);
+    if (deleteFiles.length) groups.push({ label: 'deleting', tasks: deleteFiles.map(f => new DeleteTask(f, this.targetAdapter)) });
 
     return groups;
   }

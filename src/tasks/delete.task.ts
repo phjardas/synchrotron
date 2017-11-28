@@ -1,17 +1,14 @@
-import * as fs from 'fs';
-import { promisify } from 'util';
-
-import { Task, TaskResult } from "../model";
-
-
-const deleteFile = promisify(fs.unlink);
+import { Task, TaskResult, TargetAdapter } from "../model";
 
 
 export class DeleteTask implements Task {
-  constructor(private readonly file: string) { }
+  constructor(
+    private readonly file: string,
+    private readonly targetAdapter: TargetAdapter
+  ) {}
 
   async execute(): Promise<TaskResult> {
-    await deleteFile(this.file);
+    await this.targetAdapter.deleteFile(this.file);
 
     return {
       filesDeleted: 1,
