@@ -1,34 +1,50 @@
 import * as path from 'path';
+import * as fs from 'fs';
+import { promisify } from 'util';
+import * as findNodeModules from 'find-node-modules';
+
 import { Plugin, Extension } from './plugin';
 
-
-export interface PluginManager {
-  readonly plugins: Promise<Plugin[]>;
-  readonly extensions: Promise<Extension[]>;
-  getExtension(type: string, id: string): Promise<Extension>;
-}
+const stat = promisify(fs.stat);
+const readdir = promisify(fs.readdir);
 
 
-class PluginManagerImpl implements PluginManager {
+export class PluginManager {
   private _plugins: Promise<Plugin[]>;
   private _extensions: Promise<Extension[]>;
 
-  private async loadPlugin(path: string): Promise<Plugin> {
+  private async loadPlugin(name: string): Promise<Plugin> {
     try {
-      const p = require(path);
+      const p = require(name);
       return p.default || p;
     } catch (err) {
-      console.error(`Error loading plugin from ${path}:`, err);
+      console.error(`Error loading plugin ${name}:`, err);
+      throw new Error(`Error loading plugin ${name}: ${err.message}`);
     }
   }
 
-  private discoverPlugins(): Promise<Plugin[]> {
-    // FIXME resolve plugins
-    const plugins = ['filesystem', 'rhythmbox']
-      .map(pluginId => path.resolve(__dirname, '..', '..', `synchrotron-${pluginId}-plugin`, 'dist'))
-      .map(path => this.loadPlugin(path));
+  private async discoverPluginsFrom(repo: string): Promise<string[]> {
+    const abs = path.resolve(__dirname, repo);
+    const files = await readdir(abs);
+    const stats = await Promise.all(
+      files.map(file => path.resolve(abs, file))
+      .map(async file => ({ file: path.parse(file), stats: await stat(file) }))
+    );
+    
+    const dirs = stats.filter(s =>
+      s.stats.isDirectory() &&
+      s.file.name.startsWith('synchrotron-') &&
+      s.file.name.endsWith('-plugin')
+    )
+    
+    return await Promise.all(dirs.map(s => s.file.name));
+  }
 
-    return Promise.all(plugins);
+  private async discoverPlugins(): Promise<Plugin[]> {
+    const modules: string[] = findNodeModules(__dirname);
+    const pluginNames = (await Promise.all(modules.map(d => this.discoverPluginsFrom(d))))
+      .reduce((a, b) => [...a, ...b], []);
+    return Promise.all(pluginNames.map(p => this.loadPlugin(p)));
   }
 
   get plugins(): Promise<Plugin[]> {
@@ -59,5 +75,3 @@ class PluginManagerImpl implements PluginManager {
       });
   }
 }
-
-export const pluginManager: PluginManager = new PluginManagerImpl();

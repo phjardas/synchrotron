@@ -2,10 +2,11 @@ import { parseMainOptions, createOptionsParser } from './options';
 import { createLogger } from './logger';
 import { Engine } from './model';
 import { Synchrotron } from './engine';
-import { pluginManager } from './plugins';
+import { PluginManager } from './plugins';
 
 
 async function createEngine(args: string[]): Promise<Engine> {
+  const pluginManager = new PluginManager();
   const firstPassOpts = parseMainOptions(args);
 
   const extensions = await Promise.all(
