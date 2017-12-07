@@ -1,6 +1,6 @@
 {
   "name": "synchrotron",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Synchronizes your music library with your music players",
   "author": "Philipp Jardas <philipp@jardas.de>",
   "scripts": {
