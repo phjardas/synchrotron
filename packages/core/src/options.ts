@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as yargs from 'yargs';
 import { Options } from './model';
 
-
 export function parseMainOptions(args: string[]): Options {
   const argv = createOptionsParser(args).argv;
   return {
@@ -11,7 +10,7 @@ export function parseMainOptions(args: string[]): Options {
     extensions: argv,
     dryRun: argv.dryRun || false,
     noProgress: argv.noProgress || false,
-  }
+  };
 }
 
 export function createOptionsParser(args: string[]): yargs.Arguments {

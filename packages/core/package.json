@@ -1,0 +1,38 @@
+{
+  "name": "@synchrotron/core",
+  "version": "0.2.0",
+  "description": "Synchronizes your music library with your music players",
+  "author": "Philipp Jardas <philipp@jardas.de>",
+  "scripts": {
+    "start": "ts-node src/cli.ts",
+    "compile": "tsc --project . --declaration",
+    "prepublishOnly": "npm run compile"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "synchrotron": "bin/synchrotron"
+  },
+  "engines": {
+    "node": "^7.0.0"
+  },
+  "dependencies": {
+    "@synchrotron/common": "^0.2.0",
+    "@synchrotron/plugin-api": "^0.2.0",
+    "@synchrotron/filesystem-plugin": "^0.2.0",
+    "@synchrotron/rhythmbox-plugin": "^0.2.0",
+    "bytes": "^3.0.0",
+    "find-node-modules": "^1.0.4",
+    "humanize-duration": "^3.12.0",
+    "mkdirp": "^0.5.1",
+    "progress": "^2.0.0",
+    "tmp": "0.0.33",
+    "yargs": "^10.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.47",
+    "@types/progress": "^2.0.0",
+    "@types/yargs": "^8.0.2",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.6.1"
+  }
+}

@@ -1,25 +1,5 @@
-import { Logger } from "./logger";
-import { Readable, Writable } from "stream";
-
-export { Logger } from "./logger";
-
-export interface Options {
-  verbose: boolean;
-  quiet: boolean;
-  /** If set, the tasks are not actually executed but only log their intent. */
-  dryRun: boolean;
-  noProgress: boolean;
-  extensions: { [key: string]: string };
-}
-
-export interface EngineOptions extends Options {
-  logger: Logger;
-}
-
-export interface Library {
-  readonly songs: Song[];
-  readonly playlists: Playlist[];
-}
+import { Readable, Writable } from 'stream';
+import { Arguments } from 'yargs';
 
 export interface FileStats {
   readonly exists: boolean;
@@ -41,6 +21,11 @@ export interface Playlist {
   readonly songs: Song[];
 }
 
+export interface Library {
+  readonly songs: Song[];
+  readonly playlists: Playlist[];
+}
+
 export interface LibraryAdapter {
   loadLibrary(): Promise<Library>;
 }
@@ -58,17 +43,6 @@ export interface TargetAdapter {
   deleteFile(path: string): Promise<void>;
 }
 
-export interface Engine {
-  libraryAdapter: LibraryAdapter;
-  targetAdapter: TargetAdapter;
-  execute(): Promise<TaskResult>;
-}
-
-export interface Task {
-  execute(): Promise<TaskResult>;
-  dryRun(): void;
-}
-
 export interface TaskResult {
   readonly filesCreated?: number;
   readonly filesDeleted?: number;
@@ -79,4 +53,26 @@ export interface TaskResult {
   readonly playlistsUnchanged?: number;
   readonly bytesTransferred?: number;
   readonly timeMillis?: number;
+}
+
+export interface Engine {
+  libraryAdapter: LibraryAdapter;
+  targetAdapter: TargetAdapter;
+  execute(): Promise<TaskResult>;
+}
+
+export interface Plugin {
+  readonly id: string;
+  readonly version: string;
+  readonly name: string;
+  readonly description: string;
+  readonly author: string;
+  readonly extensions: Extension[] | Promise<Extension[]>;
+}
+
+export interface Extension {
+  readonly type: string;
+  readonly id: string;
+  addCommandLineOptions(yargs: Arguments): Arguments;
+  extend(engine: Engine, args: any): Engine;
 }

@@ -1,0 +1,23 @@
+{
+  "name": "@synchrotron/filesystem-plugin",
+  "version": "0.2.0",
+  "description": "Writes files to the standard filesystem",
+  "author": "Philipp Jardas <philipp@jardas.de>",
+  "main": "dist/index.js",
+  "scripts": {
+    "compile": "tsc --project . --declaration",
+    "prepublishOnly": "npm run compile"
+  },
+  "dependencies": {
+    "@synchrotron/common": "^0.2.0",
+    "@synchrotron/plugin-api": "^0.2.0",
+    "glob": "^7.1.2",
+    "mkdirp": "^0.5.1"
+  },
+  "devDependencies": {
+    "@types/mkdirp": "^0.5.1",
+    "@types/node": "^8.0.47",
+    "typescript": "^2.6.1",
+    "yargs": "^10.0.3"
+  }
+}

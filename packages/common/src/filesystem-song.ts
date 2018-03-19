@@ -1,23 +1,21 @@
 import * as fs from 'fs';
 import { Readable } from 'stream';
 import { promisify } from 'util';
-import { Song, FileStats } from './model';
+import { Song, FileStats } from '@synchrotron/plugin-api';
 
 const getFileStats = promisify(fs.stat);
 
-
-export abstract class FileSystemSong implements Song {
-  constructor(
-    public readonly absoluteFilename: string,
-    public readonly originalPath: string
-  ) {}
+export class FileSystemSong implements Song {
+  constructor(public readonly absoluteFilename: string, public readonly originalPath: string) {}
 
   get fileStats(): Promise<FileStats> {
     return (async () => {
       try {
         const stats = await getFileStats(this.absoluteFilename);
         return {
-          get exists() { return stats.isFile(); },
+          get exists() {
+            return stats.isFile();
+          },
           size: stats.size,
         };
       } catch (err) {

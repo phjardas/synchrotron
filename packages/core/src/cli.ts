@@ -1,34 +1,28 @@
-import { parseMainOptions, createOptionsParser } from './options';
+import { Engine } from '@synchrotron/plugin-api';
 import { createLogger } from './logger';
-import { Engine } from './model';
 import { Synchrotron } from './engine';
 import { PluginManager } from './plugins';
-
+import { parseMainOptions, createOptionsParser } from './options';
 
 async function createEngine(args: string[]): Promise<Engine> {
   const pluginManager = new PluginManager();
   const firstPassOpts = parseMainOptions(args);
 
   const extensions = await Promise.all(
-    Synchrotron.extensionPoints.map(ep => {
-      const extensionId = firstPassOpts.extensions[ep];
-      return extensionId && pluginManager.getExtension(ep, extensionId);
-    }).filter(e => !!e)
+    Synchrotron.extensionPoints
+      .map(ep => {
+        const extensionId = firstPassOpts.extensions[ep];
+        return extensionId && pluginManager.getExtension(ep, extensionId);
+      })
+      .filter(e => !!e)
   );
 
-  const opts = extensions.reduce(
-    (a, e) => e.addCommandLineOptions(a),
-    createOptionsParser(args)
-  ).argv;
+  const opts = extensions.reduce((a, e) => e.addCommandLineOptions(a), createOptionsParser(args)).argv;
 
   opts.logger = createLogger(opts);
 
-  return extensions.reduce(
-    (engine, ex) => ex.extend(engine, opts),
-    new Synchrotron(opts)
-  );
+  return extensions.reduce((engine, ex) => ex.extend(engine, opts), new Synchrotron(opts));
 }
-
 
 export async function main(argv: string[] = process.argv) {
   try {
