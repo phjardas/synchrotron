@@ -88,6 +88,7 @@ export class Synchrotron implements Engine {
       filesCreated: (a.filesCreated || 0) + (b.filesCreated || 0),
       filesDeleted: (a.filesDeleted || 0) + (b.filesDeleted || 0),
       filesUnchanged: (a.filesUnchanged || 0) + (b.filesUnchanged || 0),
+      filesFailed: (a.filesFailed || 0) + (b.filesFailed || 0),
       playlistsCreated: (a.playlistsCreated || 0) + (b.playlistsCreated || 0),
       playlistsDeleted: (a.playlistsDeleted || 0) + (b.playlistsDeleted || 0),
       playlistsUnchanged: (a.playlistsUnchanged || 0) + (b.playlistsUnchanged || 0),
@@ -100,7 +101,7 @@ export class Synchrotron implements Engine {
     const { logger } = this.options;
 
     logger.info('\n');
-    logger.info('Files: %d created, %d unchanged, %d deleted', results.filesCreated, results.filesUnchanged, results.filesDeleted);
+    logger.info('Files: %d created, %d unchanged, %d deleted, %d failed', results.filesCreated, results.filesUnchanged, results.filesDeleted, results.filesFailed);
     logger.info('Playlists: %d created, %d unchanged, %d deleted', results.playlistsCreated, results.playlistsUnchanged, results.playlistsDeleted);
     logger.info('Total transferred: %s', bytes(results.bytesTransferred));
     logger.info('Total duration: %s', duration(results.timeMillis));

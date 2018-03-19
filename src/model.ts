@@ -1,7 +1,7 @@
-import { Logger } from './logger';
-import { Readable, Writable } from 'stream';
+import { Logger } from "./logger";
+import { Readable, Writable } from "stream";
 
-export { Logger } from './logger';
+export { Logger } from "./logger";
 
 export interface Options {
   verbose: boolean;
@@ -47,9 +47,13 @@ export interface LibraryAdapter {
 
 export interface TargetAdapter {
   getFileStats(path: string): Promise<FileStats>;
-  createWriter(path: string, options?: {
-    encoding: string;
-  }): Promise<Writable>;
+  createWriter(
+    path: string,
+    options?: {
+      encoding: string;
+    }
+  ): Promise<Writable>;
+  getPlaylistPath(path: string): string;
   getFilesToDelete(files: string[]): Promise<string[]>;
   deleteFile(path: string): Promise<void>;
 }
@@ -69,6 +73,7 @@ export interface TaskResult {
   readonly filesCreated?: number;
   readonly filesDeleted?: number;
   readonly filesUnchanged?: number;
+  readonly filesFailed?: number;
   readonly playlistsCreated?: number;
   readonly playlistsDeleted?: number;
   readonly playlistsUnchanged?: number;

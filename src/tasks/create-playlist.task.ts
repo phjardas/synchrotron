@@ -1,6 +1,5 @@
 import { Task, TaskResult, Playlist, TargetAdapter } from "../model";
 
-
 export class CreatePlaylistTask implements Task {
   public readonly filename: string;
 
@@ -12,18 +11,23 @@ export class CreatePlaylistTask implements Task {
   }
 
   async execute(): Promise<TaskResult> {
-    const out = await this.targetAdapter.createWriter(this.filename, { encoding: 'utf8' });
-    const content = this.playlist.songs.map(s => s.originalPath).join('\n') + '\n';
-    
+    const out = await this.targetAdapter.createWriter(this.filename, {
+      encoding: "utf8"
+    });
+    const content =
+      this.playlist.songs
+        .map(s => this.targetAdapter.getPlaylistPath(s.originalPath))
+        .join("\n") + "\n";
+
     await new Promise((resolve, reject) => {
-      out.on('finish', resolve);
-      out.on('error', reject);
+      out.on("finish", resolve);
+      out.on("error", reject);
       out.write(content);
       out.end();
     });
 
     return {
-      playlistsCreated: 1,
+      playlistsCreated: 1
     };
   }
 

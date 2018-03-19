@@ -8,32 +8,39 @@ export class CopyTask implements Task {
   ) {}
 
   async execute(): Promise<TaskResult> {
-    const sourceStats = await this.song.fileStats;
-    const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
+    try {
+      const sourceStats = await this.song.fileStats;
+      const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
 
-    if (sourceStats.exists && targetStats.exists) {
-      if (sourceStats.size === targetStats.size) {
-        return {
-          filesUnchanged: 1,
-        };
+      if (sourceStats.exists && targetStats.exists) {
+        if (sourceStats.size === targetStats.size) {
+          return {
+            filesUnchanged: 1,
+          };
+        }
       }
+
+      const [ reader, writer ] = await Promise.all([
+        this.song.open(),
+        this.targetAdapter.createWriter(this.song.originalPath)
+      ]);
+
+      await new Promise((resolve, reject) => {
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+        reader.pipe(writer);
+      });
+
+      return {
+        filesCreated: 1,
+        bytesTransferred: sourceStats.size,
+      };
+    } catch (err) {
+      console.error('Error copying: ' + err, err);
+      return {
+        filesFailed: 1,
+      };
     }
-
-    const [ reader, writer ] = await Promise.all([
-      this.song.open(),
-      this.targetAdapter.createWriter(this.song.originalPath)
-    ]);
-
-    await new Promise((resolve, reject) => {
-      writer.on('finish', resolve);
-      writer.on('error', reject);
-      reader.pipe(writer);
-    });
-
-    return {
-      filesCreated: 1,
-      bytesTransferred: sourceStats.size,
-    };
   }
 
   dryRun() {
