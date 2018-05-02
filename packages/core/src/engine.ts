@@ -75,8 +75,7 @@ export class Synchrotron implements Engine {
 
   private executeTask(task: Task): Promise<TaskResult> {
     if (this.options.dryRun) {
-      task.dryRun();
-      return Promise.resolve({});
+      return task.dryRun();
     }
 
     return task.execute();

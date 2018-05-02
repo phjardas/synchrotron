@@ -1,3 +1,5 @@
+import * as bytes from 'bytes';
+
 import { Task, TaskResult, TargetAdapter, Song } from '../model';
 
 export class CopyTask implements Task {
@@ -5,15 +7,9 @@ export class CopyTask implements Task {
 
   async execute(): Promise<TaskResult> {
     try {
-      const sourceStats = await this.song.fileStats;
-      const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
-
-      if (sourceStats.exists && targetStats.exists) {
-        if (sourceStats.size === targetStats.size) {
-          return {
-            filesUnchanged: 1,
-          };
-        }
+      const { skip, size } = await this.getStats();
+      if (skip) {
+        return { filesUnchanged: 1 };
       }
 
       const [reader, writer] = await Promise.all([this.song.open(), this.targetAdapter.createWriter(this.song.originalPath)]);
@@ -24,19 +20,31 @@ export class CopyTask implements Task {
         reader.pipe(writer);
       });
 
-      return {
-        filesCreated: 1,
-        bytesTransferred: sourceStats.size,
-      };
+      return { filesCreated: 1, bytesTransferred: size };
     } catch (err) {
       console.error('Error copying: ' + err, err);
-      return {
-        filesFailed: 1,
-      };
+      return { filesFailed: 1 };
     }
   }
 
-  dryRun() {
-    console.log('SYNC: %s', this.song.originalPath);
+  async dryRun(): Promise<TaskResult> {
+    const { skip, size } = await this.getStats();
+    if (skip) {
+      console.log('SKIP: %s', this.song.originalPath);
+      return { filesUnchanged: 1 };
+    }
+
+    console.log('COPY: %s (%s)', this.song.originalPath, bytes(size));
+    return { filesCreated: 1, bytesTransferred: size };
+  }
+
+  private async getStats(): Promise<{ skip: boolean; size: number }> {
+    const sourceStats = await this.song.fileStats;
+    const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
+
+    return {
+      skip: sourceStats.exists && targetStats.exists && sourceStats.size === targetStats.size,
+      size: sourceStats.size,
+    };
   }
 }

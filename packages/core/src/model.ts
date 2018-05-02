@@ -19,5 +19,5 @@ export interface EngineOptions extends Options {
 
 export interface Task {
   execute(): Promise<TaskResult>;
-  dryRun(): void;
+  dryRun(): Promise<TaskResult>;
 }
