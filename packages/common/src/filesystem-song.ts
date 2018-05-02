@@ -13,9 +13,7 @@ export class FileSystemSong implements Song {
       try {
         const stats = await getFileStats(this.absoluteFilename);
         return {
-          get exists() {
-            return stats.isFile();
-          },
+          exists: stats.isFile(),
           size: stats.size,
         };
       } catch (err) {

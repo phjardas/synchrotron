@@ -1,11 +1,7 @@
-import { Task, TaskResult, TargetAdapter, Song } from "../model";
-
+import { Task, TaskResult, TargetAdapter, Song } from '../model';
 
 export class CopyTask implements Task {
-  constructor(
-    private readonly song: Song,
-    private readonly targetAdapter: TargetAdapter
-  ) {}
+  constructor(private readonly song: Song, private readonly targetAdapter: TargetAdapter) {}
 
   async execute(): Promise<TaskResult> {
     try {
@@ -20,10 +16,7 @@ export class CopyTask implements Task {
         }
       }
 
-      const [ reader, writer ] = await Promise.all([
-        this.song.open(),
-        this.targetAdapter.createWriter(this.song.originalPath)
-      ]);
+      const [reader, writer] = await Promise.all([this.song.open(), this.targetAdapter.createWriter(this.song.originalPath)]);
 
       await new Promise((resolve, reject) => {
         writer.on('finish', resolve);

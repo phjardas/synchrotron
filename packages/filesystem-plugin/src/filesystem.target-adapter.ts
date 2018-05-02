@@ -23,16 +23,18 @@ export class FilesystemTargetAdapter implements TargetAdapter {
   }
 
   getPlaylistPath(file: string): string {
-    return this.sanitize(path.resolve(this.opts.targetDir, file));
+    return this.sanitize(file);
+  }
+
+  private getAbsolutePath(file: string): string {
+    return path.resolve(this.opts.targetDir, this.getPlaylistPath(file));
   }
 
   async getFileStats(file: string): Promise<FileStats> {
     try {
-      const stats = await getFileStats(this.getPlaylistPath(file));
+      const stats = await getFileStats(this.getAbsolutePath(file));
       return {
-        get exists() {
-          return stats.isFile();
-        },
+        exists: stats.isFile(),
         size: stats.size,
       };
     } catch (err) {
@@ -42,20 +44,21 @@ export class FilesystemTargetAdapter implements TargetAdapter {
   }
 
   async createWriter(file: string, options?: { encoding: string }): Promise<Writable> {
-    const abs = this.getPlaylistPath(file);
+    const abs = this.getAbsolutePath(file);
     await mkdirs(path.parse(abs).dir);
     return fs.createWriteStream(abs, options);
   }
 
   async getFilesToDelete(files: string[]): Promise<string[]> {
+    const sanitizedFiles = files.map(f => this.getPlaylistPath(f));
     const targetFiles = await promisify(glob)('**/*', {
       cwd: this.opts.targetDir,
       nodir: true,
     });
-    return targetFiles.filter(f => files.indexOf(f) < 0);
+    return targetFiles.filter(f => sanitizedFiles.indexOf(f) < 0);
   }
 
   deleteFile(file: string): Promise<void> {
-    return unlink(this.getPlaylistPath(file));
+    return unlink(this.getAbsolutePath(file));
   }
 }
