@@ -1,11 +1,10 @@
-import * as glob from 'glob';
+import { FileStats, TargetAdapter } from '@synchrotron/plugin-api';
 import * as fs from 'fs';
-import * as path from 'path';
-import { promisify } from 'util';
-import { Writable } from 'stream';
+import * as glob from 'glob';
 import * as mkdirp from 'mkdirp';
-
-import { TargetAdapter, FileStats } from '@synchrotron/plugin-api';
+import * as path from 'path';
+import { Writable } from 'stream';
+import { promisify } from 'util';
 
 const getFileStats = promisify(fs.stat);
 const unlink = promisify(fs.unlink);
@@ -59,6 +58,6 @@ export class FilesystemTargetAdapter implements TargetAdapter {
   }
 
   deleteFile(file: string): Promise<void> {
-    return unlink(this.getAbsolutePath(file));
+    return unlink(path.resolve(this.opts.targetDir, file));
   }
 }
