@@ -13,7 +13,7 @@
     "url": "https://github.com/phjardas/synchrotron/issues"
   },
   "homepage": "https://github.com/phjardas/synchrotron#readme",
-  "scripts":{
+  "scripts": {
     "postinstall": "lerna bootstrap",
     "lerna": "lerna",
     "start": "cd packages/core && npm start --"
