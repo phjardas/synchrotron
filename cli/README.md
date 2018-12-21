@@ -11,7 +11,7 @@ It should theoretically run on any platform that supports node.js, but its prima
 Install Synchrotron with `npm`:
 
 ```
-npm install -g @synchrotron/core
+npm install -g synchrotron
 ```
 
 ## Usage
