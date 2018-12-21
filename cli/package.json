@@ -1,6 +1,6 @@
 {
   "name": "synchrotron",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Synchrotron CLI",
   "author": "Philipp Jardas <philipp@jardas.de>",
   "main": "build/index.js",
