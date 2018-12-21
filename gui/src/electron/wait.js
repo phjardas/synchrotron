@@ -17,6 +17,7 @@ function tryConnection() {
       if (!startedElectron) {
         console.info('starting electron on port %s', url);
         startedElectron = true;
+        process.env.NODE_ENV = 'development';
         process.env.ELECTRON_START_URL = url;
         exec('npm run electron');
       }

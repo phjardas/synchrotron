@@ -17,15 +17,19 @@ function createWindow() {
       protocol: 'file:',
       slashes: true,
     });
+
   mainWindow.loadURL(appUrl);
 
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools();
-  }
+  // FIXME only in dev mode!
+  mainWindow.webContents.openDevTools();
+  mainWindow.maximize();
+  require('devtron').install();
 
   mainWindow.on('closed', function() {
     mainWindow = null;
   });
+
+  require('./api');
 }
 
 app.on('ready', createWindow);

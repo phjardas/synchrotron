@@ -4,7 +4,7 @@
   "description": "Synchrotron GUI",
   "author": "Philipp Jardas <philipp@jardas.de>",
   "homepage": "./",
-  "main": "src/electron.js",
+  "main": "src/electron",
   "dependencies": {
     "@material-ui/core": "^3.7.0",
     "@material-ui/icons": "^3.0.1",
@@ -13,6 +13,7 @@
     "synchrotron": "^1.0.0"
   },
   "devDependencies": {
+    "devtron": "^1.4.0",
     "electron": "^4.0.0",
     "foreman": "^3.0.1",
     "react-scripts": "2.1.1"
