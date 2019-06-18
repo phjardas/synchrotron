@@ -1,8 +1,5 @@
-import { Synchrotron } from './engine';
-import { createLogger } from './logger';
+import { createLogger, Engine, PluginManager, Synchrotron } from 'synchrotron-core';
 import { createOptionsParser, parseMainOptions } from './options';
-import { Engine } from './plugin-api';
-import { PluginManager } from './plugin-manager';
 
 async function createEngine(args: string[]): Promise<Engine> {
   const pluginManager = new PluginManager();

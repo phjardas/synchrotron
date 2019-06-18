@@ -1,0 +1,14 @@
+{
+  "name": "synchrotron",
+  "version": "1.0.0",
+  "description": "Synchrotron",
+  "author": "Philipp Jardas <philipp@jardas.de>",
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "start": "lerna run start --stream"
+  },
+  "devDependencies": {
+    "lerna": "^3.15.0"
+  }
+}

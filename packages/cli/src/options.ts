@@ -1,6 +1,5 @@
-import * as fs from 'fs';
 import * as yargs from 'yargs';
-import { Options } from './model';
+import { Options } from 'synchrotron-core';
 
 export function parseMainOptions(args: string[]): Options {
   const argv = createOptionsParser(args).argv;
@@ -14,10 +13,7 @@ export function parseMainOptions(args: string[]): Options {
 }
 
 export function createOptionsParser(args: string[]): yargs.Arguments<any> {
-  const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-
   return yargs(args)
-    .version(pkg.version)
     .option('verbose', { alias: 'v', boolean: true })
     .option('quiet', { alias: 'q', boolean: true })
     .option('dry-run', { boolean: true })

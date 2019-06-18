@@ -1,0 +1,23 @@
+{
+  "name": "synchrotron-cli",
+  "version": "1.0.0",
+  "description": "Synchrotron CLI",
+  "author": "Philipp Jardas <philipp@jardas.de>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "synchrotron": "bin/synchrotron"
+  },
+  "scripts": {
+    "clean": "shx rm -rf dist",
+    "build": "npm run clean && tsc",
+    "prepublishOnly": "npm run dist"
+  },
+  "dependencies": {
+    "synchrotron-core": "1.0.0"
+  },
+  "devDependencies": {
+    "shx": "^0.3.2",
+    "typescript": "^3.2.2"
+  }
+}

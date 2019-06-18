@@ -1,0 +1,39 @@
+{
+  "name": "synchrotron-gui",
+  "version": "1.0.0",
+  "description": "Synchrotron GUI",
+  "author": "Philipp Jardas <philipp@jardas.de>",
+  "homepage": ".",
+  "main": "src/electron",
+  "scripts": {
+    "clean": "shx rm -rf build",
+    "build": "npm run clean && react-scripts build",
+    "start": "concurrently --kill-others \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\""
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.1.1",
+    "@material-ui/icons": "^4.2.0",
+    "electron-is-dev": "^1.1.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "synchrotron-core": "^1.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "cross-env": "^5.2.0",
+    "electron": "^5.0.4",
+    "electron-builder": "^20.43.0",
+    "react-scripts": "3.0.1",
+    "shx": "^0.3.2",
+    "wait-on": "^3.2.0"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

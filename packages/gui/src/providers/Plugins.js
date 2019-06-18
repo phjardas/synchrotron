@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, useContext } from 'react';
+
 const { ipcRenderer } = window.require('electron');
 
-const Context = React.createContext();
+const Context = createContext();
 
 export function PluginsProvider({ children }) {
   const [state, setState] = useState({ loading: true });
@@ -14,6 +15,6 @@ export function PluginsProvider({ children }) {
   return <Context.Provider value={state}>{children}</Context.Provider>;
 }
 
-export function withPlugins(Component) {
-  return props => <Context.Consumer>{context => <Component {...context} {...props} />}</Context.Consumer>;
+export function usePlugins() {
+  return useContext(Context);
 }

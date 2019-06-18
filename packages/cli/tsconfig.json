@@ -9,6 +9,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "rootDir": "src",
-    "outDir": "build"
+    "outDir": "dist"
   }
 }

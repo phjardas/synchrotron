@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { PluginManager } = require('synchrotron');
+const { PluginManager } = require('synchrotron-core');
 
 const pluginManager = new PluginManager();
 
