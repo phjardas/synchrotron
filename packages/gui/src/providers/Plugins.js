@@ -8,7 +8,15 @@ export function PluginsProvider({ children }) {
   const [state, setState] = useState({ loading: true });
 
   useEffect(() => {
-    ipcRenderer.on('get-plugins-reply', (_, { plugins, error }) => setState({ plugins, error, loading: false }));
+    ipcRenderer.on('get-plugins-reply', (_, { plugins, error }) => {
+      const extensionPoints = {};
+      plugins.forEach(plugin =>
+        plugin.extensions.forEach(ext => (extensionPoints[ext.type] = extensionPoints[ext.type] || []).push(plugin))
+      );
+
+      setState({ plugins, extensionPoints, error, loading: false });
+    });
+
     ipcRenderer.send('get-plugins');
   }, []);
 

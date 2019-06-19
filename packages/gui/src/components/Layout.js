@@ -1,21 +1,8 @@
-import { AppBar, Toolbar, withStyles } from '@material-ui/core';
+import { AppBar, Toolbar } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 
-function Layout({ classes, children }) {
-  return (
-    <div className={classes.root}>
-      <AppBar position="sticky" color="primary">
-        <Toolbar className={classes.toolbar}>
-          <span className={classes.title}>Synchrotron</span>
-        </Toolbar>
-      </AppBar>
-
-      <main className={classes.main}>{children}</main>
-    </div>
-  );
-}
-
-const styles = ({ typography }) => ({
+const useStyles = makeStyles(({ typography }) => ({
   root: {
     minHeight: '100vh',
     display: 'flex',
@@ -34,6 +21,20 @@ const styles = ({ typography }) => ({
   main: {
     flex: 1,
   },
-});
+}));
 
-export default withStyles(styles)(Layout);
+export default function Layout({ children }) {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <AppBar position="sticky" color="primary">
+        <Toolbar className={classes.toolbar}>
+          <span className={classes.title}>Synchrotron</span>
+        </Toolbar>
+      </AppBar>
+
+      <main className={classes.main}>{children}</main>
+    </div>
+  );
+}

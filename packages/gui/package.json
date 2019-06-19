@@ -13,14 +13,18 @@
   "dependencies": {
     "@material-ui/core": "^4.1.1",
     "@material-ui/icons": "^4.2.0",
+    "@material-ui/styles": "^4.1.1",
     "electron-is-dev": "^1.1.0",
+    "formik": "^1.5.7",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "synchrotron-core": "^1.0.0"
+    "synchrotron-core": "^1.0.0",
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "concurrently": "^4.1.0",
     "cross-env": "^5.2.0",
+    "devtron": "^1.4.0",
     "electron": "^5.0.4",
     "electron-builder": "^20.43.0",
     "react-scripts": "3.0.1",
