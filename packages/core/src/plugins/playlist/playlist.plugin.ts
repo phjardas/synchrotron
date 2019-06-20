@@ -1,22 +1,21 @@
-import { Arguments, Argv } from 'yargs';
-import { Engine, Extension, Plugin } from '../../plugin-api';
+import { Engine, Extension, OptionSpec, ParsedOptions, Plugin } from '../../plugin-api';
 import { PlaylistLibraryAdapter, PlaylistOptions } from './playlist.library-adapter';
 
 class PlaylistLibraryAdapterExtension implements Extension {
   id = 'playlist';
   type = 'library-adapter';
+  options: OptionSpec[] = [
+    {
+      id: 'playlist-files',
+      required: true,
+      type: 'files',
+      description: 'comma-separated path to M3U playlists',
+    },
+  ];
 
-  addCommandLineOptions(yargs: Arguments<any>): Arguments<any> {
-    return yargs.option('playlist-files', {
-      demandOption: true,
-      array: true,
-      describe: 'comma-separated path to M3U playlists',
-    });
-  }
-
-  extend(engine: Engine, args: Argv): Engine {
+  extend(engine: Engine, args: ParsedOptions): Engine {
     const opts: PlaylistOptions = {
-      playlistFiles: args['playlist-files'],
+      playlistFiles: args['playlist-files'].split(/\s*,\s*/),
     };
 
     engine.libraryAdapter = new PlaylistLibraryAdapter(opts);

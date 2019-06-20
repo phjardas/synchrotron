@@ -11,7 +11,7 @@ export function PluginsProvider({ children }) {
     ipcRenderer.on('get-plugins-reply', (_, { plugins, error }) => {
       const extensionPoints = {};
       plugins.forEach(plugin =>
-        plugin.extensions.forEach(ext => (extensionPoints[ext.type] = extensionPoints[ext.type] || []).push(plugin))
+        plugin.extensions.forEach(ext => (extensionPoints[ext.type] = extensionPoints[ext.type] || []).push({ ...ext, plugin }))
       );
 
       setState({ plugins, extensionPoints, error, loading: false });

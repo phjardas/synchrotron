@@ -1,4 +1,5 @@
-import { createLogger, Engine, PluginManager, Synchrotron } from 'synchrotron-core';
+import { createLogger, Engine, Extension, ParsedOptions, PluginManager, Synchrotron } from 'synchrotron-core';
+import { Arguments } from 'yargs';
 import { createOptionsParser, parseMainOptions } from './options';
 
 async function createEngine(args: string[]): Promise<Engine> {
@@ -14,11 +15,28 @@ async function createEngine(args: string[]): Promise<Engine> {
       .filter(e => !!e)
   );
 
-  const opts = extensions.reduce((a, e) => e.addCommandLineOptions(a), createOptionsParser(args)).argv;
+  const opts = extensions.reduce((a, e) => addCommandLineOptions(a, e), createOptionsParser(args)).argv;
 
   opts.logger = createLogger(opts);
 
-  return extensions.reduce((engine, ex) => ex.extend(engine, opts), new Synchrotron(opts));
+  return extensions.reduce((engine, ex) => applyCommandLineOptions(ex, engine, opts), new Synchrotron(opts));
+}
+
+function addCommandLineOptions(args: Arguments<any>, extension: Extension): Arguments<any> {
+  if (extension.options) {
+    extension.options.forEach(option => {
+      args.option(option.id, {
+        demandOption: option.required,
+        decribe: option.description,
+      });
+    });
+  }
+
+  return args;
+}
+
+function applyCommandLineOptions(extension: Extension, engine: Engine, opts: ParsedOptions): Engine {
+  return extension.extend(engine, opts);
 }
 
 export async function main(argv: string[] = process.argv) {

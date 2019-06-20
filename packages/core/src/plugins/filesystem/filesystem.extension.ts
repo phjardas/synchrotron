@@ -1,16 +1,19 @@
-import { Arguments } from 'yargs';
-import { Engine, Extension } from '../../plugin-api';
+import { Engine, Extension, OptionSpec, ParsedOptions } from '../../plugin-api';
 import { FilesystemTargetAdapter, FilesystemTargetAdapterOptions } from './filesystem.target-adapter';
 
 class FilesystemTargetAdapterExtension implements Extension {
   type = 'target-adapter';
   id = 'filesystem';
+  options: OptionSpec[] = [
+    {
+      id: 'target-dir',
+      type: 'directory',
+      required: true,
+      description: 'The target directory to which to synchronize files to',
+    },
+  ];
 
-  addCommandLineOptions(yargs: Arguments<any>): Arguments<any> {
-    return yargs.option('target-dir', { demandOption: true, describe: 'The target directory to which to synchronize files to' });
-  }
-
-  extend(engine: Engine, args: any): Engine {
+  extend(engine: Engine, args: ParsedOptions): Engine {
     const opts: FilesystemTargetAdapterOptions = {
       targetDir: args['target-dir'],
     };

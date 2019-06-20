@@ -1,5 +1,4 @@
 import { Readable, Writable } from 'stream';
-import { Arguments } from 'yargs';
 
 export interface FileStats {
   readonly exists: boolean;
@@ -73,6 +72,19 @@ export interface Plugin {
 export interface Extension {
   readonly type: string;
   readonly id: string;
-  addCommandLineOptions(yargs: Arguments<any>): Arguments<any>;
-  extend(engine: Engine, args: any): Engine;
+  readonly options?: OptionSpec[];
+  extend(engine: Engine, args: ParsedOptions): Engine;
 }
+
+export type OptionType = 'string' | 'directory' | 'files';
+
+export interface OptionSpec {
+  id: string;
+  type: OptionType;
+  required?: boolean;
+  description?: string;
+}
+
+export type ParsedOptions = {
+  [id: string]: string;
+};

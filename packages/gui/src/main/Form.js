@@ -1,8 +1,9 @@
-import { Button, FormControl, InputLabel, MenuItem, Select, CircularProgress } from '@material-ui/core';
+import { Button, CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Formik } from 'formik';
 import React from 'react';
 import { usePlugins } from '../providers/Plugins';
+import ExtensionPointOptions from './ExtensionPointOptions';
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
@@ -28,12 +29,8 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
 }));
 
 const initialValues = {
-  source: {
-    type: '',
-  },
-  target: {
-    type: '',
-  },
+  'library-adapter': '',
+  'target-adapter': '',
 };
 
 export default function Form({ onSubmit }) {
@@ -43,41 +40,55 @@ export default function Form({ onSubmit }) {
   if (loading) return <CircularProgress />;
   if (error) return <div>Error: {error.message}</div>;
 
-  console.log(extensionPoints);
-
   return (
     <Formik onSubmit={onSubmit} initialValues={initialValues}>
       {({ values, handleBlur, handleChange, handleSubmit }) => (
         <form onSubmit={handleSubmit} className={classes.root}>
           <fieldset className={classes.section}>
             <legend>Source</legend>
-            <FormControl fullWidth>
+            <FormControl fullWidth margin="normal">
               <InputLabel>Type</InputLabel>
-              <Select name="source.type" value={values.source.type} onChange={handleChange} onBlur={handleBlur}>
+              <Select name="library-adapter" value={values['library-adapter']} onChange={handleChange} onBlur={handleBlur}>
                 {(extensionPoints['library-adapter'] || [])
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(plugin => (
-                    <MenuItem key={plugin.id} value={plugin.id}>
-                      {plugin.name}
+                  .sort((a, b) => a.plugin.name.localeCompare(b.plugin.name))
+                  .map(ext => (
+                    <MenuItem key={ext.id} value={ext.id}>
+                      {ext.plugin.name}
                     </MenuItem>
                   ))}
               </Select>
             </FormControl>
+            {values['library-adapter'] && (
+              <ExtensionPointOptions
+                extensionPoint={extensionPoints['library-adapter'].find(e => e.id === values['library-adapter'])}
+                values={values}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+              />
+            )}
           </fieldset>
           <fieldset className={classes.section}>
             <legend>Target</legend>
-            <FormControl fullWidth>
+            <FormControl fullWidth margin="normal">
               <InputLabel>Type</InputLabel>
-              <Select name="target.type" value={values.target.type} onChange={handleChange} onBlur={handleBlur}>
+              <Select name="target-adapter" value={values['target-adapter']} onChange={handleChange} onBlur={handleBlur}>
                 {(extensionPoints['target-adapter'] || [])
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(plugin => (
-                    <MenuItem key={plugin.id} value={plugin.id}>
-                      {plugin.name}
+                  .sort((a, b) => a.plugin.name.localeCompare(b.plugin.name))
+                  .map(ext => (
+                    <MenuItem key={ext.id} value={ext.id}>
+                      {ext.plugin.name}
                     </MenuItem>
                   ))}
               </Select>
             </FormControl>
+            {values['target-adapter'] && (
+              <ExtensionPointOptions
+                extensionPoint={extensionPoints['target-adapter'].find(e => e.id === values['target-adapter'])}
+                values={values}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+              />
+            )}
           </fieldset>
           <div className={classes.actions}>
             <Button variant="contained" color="primary" type="submit">

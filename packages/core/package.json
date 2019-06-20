@@ -15,14 +15,12 @@
     "humanize-duration": "^3.16.0",
     "mkdirp": "^0.5.1",
     "progress": "^2.0.3",
-    "xml2js": "^0.4.19",
-    "yargs": "^12.0.5"
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",
     "@types/progress": "^2.0.3",
     "@types/xml2js": "^0.4.3",
-    "@types/yargs": "^12.0.2",
     "shx": "^0.3.2",
     "typescript": "^3.2.2"
   }
