@@ -1,4 +1,5 @@
-import { Button, FormHelperText, FormLabel, makeStyles } from '@material-ui/core';
+import { Button, FormHelperText, FormLabel, Input, makeStyles } from '@material-ui/core';
+import { useField } from 'formik';
 import React, { useCallback } from 'react';
 
 const { ipcRenderer } = window.require('electron');
@@ -30,14 +31,16 @@ function openSelectDialog() {
   });
 }
 
-export default function ExtensionPointDirectoryOption({ option, values, handleChange }) {
+export default function ExtensionPointDirectoryOption({ option }) {
+  const [field] = useField(option.id);
   const classes = useStyles();
+  const { name, onChange } = field;
 
   const onSelect = useCallback(async () => {
     const selection = await openSelectDialog();
-    console.log('selection:', selection);
-    handleChange({ name: option.id, value: selection.length ? selection[0] : '' });
-  }, [handleChange, option.id]);
+    const value = selection && selection.length ? selection[0] : '';
+    onChange({ target: { name, value } });
+  }, [name, onChange]);
 
   return (
     <div className={classes.root}>
@@ -45,7 +48,7 @@ export default function ExtensionPointDirectoryOption({ option, values, handleCh
         {option.label}
       </FormLabel>
       <div className={classes.control}>
-        <div className={classes.value}>{values[option.id] ? values[option.id] : <em>none</em>}</div>
+        <Input {...field} fullWidth />
         <Button type="button" onClick={onSelect}>
           select
         </Button>

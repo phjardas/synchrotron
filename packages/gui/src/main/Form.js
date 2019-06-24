@@ -1,9 +1,9 @@
-import { Button, CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import { Button, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Formik } from 'formik';
-import React from 'react';
+import { Form, Formik } from 'formik';
+import React, { useMemo } from 'react';
 import { usePlugins } from '../providers/Plugins';
-import ExtensionPointOptions from './ExtensionPointOptions';
+import PluginSelect from './PluginSelect';
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
@@ -28,75 +28,44 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   },
 }));
 
-const initialValues = {
-  'library-adapter': 'rhythmbox',
-  'target-adapter': 'filesystem',
-};
+function createInitialValues(plugins) {
+  const values = {
+    'library-adapter': 'rhythmbox',
+    'target-adapter': 'filesystem',
+  };
 
-export default function Form({ onSubmit }) {
-  const { loading, error, extensionPoints } = usePlugins();
+  plugins.forEach(plugin => plugin.extensions.forEach(ext => ext.options.forEach(opt => (values[opt.id] = opt.defaultValue || ''))));
+
+  return values;
+}
+
+export default function SynchronizeForm({ onSubmit }) {
+  const { loading, error, plugins } = usePlugins();
   const classes = useStyles();
+  const initialValues = useMemo(() => plugins && createInitialValues(plugins), [plugins]);
 
   if (loading) return <CircularProgress />;
   if (error) return <div>Error: {error.message}</div>;
 
   return (
     <Formik onSubmit={onSubmit} initialValues={initialValues}>
-      {({ values, handleBlur, handleChange, handleSubmit }) => (
-        <form onSubmit={handleSubmit} className={classes.root}>
+      {({ values, isValid, isSubmitting, isValidating }) => (
+        <Form className={classes.root}>
           <fieldset className={classes.section}>
             <legend>Source</legend>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Type</InputLabel>
-              <Select name="library-adapter" value={values['library-adapter']} onChange={handleChange} onBlur={handleBlur}>
-                {(extensionPoints['library-adapter'] || [])
-                  .sort((a, b) => a.plugin.name.localeCompare(b.plugin.name))
-                  .map(ext => (
-                    <MenuItem key={ext.id} value={ext.id}>
-                      {ext.plugin.name}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-            {values['library-adapter'] && (
-              <ExtensionPointOptions
-                extensionPoint={extensionPoints['library-adapter'].find(e => e.id === values['library-adapter'])}
-                values={values}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-              />
-            )}
+            <PluginSelect type="library-adapter" />
           </fieldset>
           <fieldset className={classes.section}>
             <legend>Target</legend>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Type</InputLabel>
-              <Select name="target-adapter" value={values['target-adapter']} onChange={handleChange} onBlur={handleBlur}>
-                {(extensionPoints['target-adapter'] || [])
-                  .sort((a, b) => a.plugin.name.localeCompare(b.plugin.name))
-                  .map(ext => (
-                    <MenuItem key={ext.id} value={ext.id}>
-                      {ext.plugin.name}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-            {values['target-adapter'] && (
-              <ExtensionPointOptions
-                extensionPoint={extensionPoints['target-adapter'].find(e => e.id === values['target-adapter'])}
-                values={values}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-              />
-            )}
+            <PluginSelect type="target-adapter" />
           </fieldset>
           <div className={classes.actions}>
-            <Button variant="contained" color="primary" type="submit">
+            <Button variant="contained" color="primary" type="submit" disabled={!isValid || isSubmitting || isValidating}>
               Synchronize
             </Button>
           </div>
           <pre>{JSON.stringify(values, null, 2)}</pre>
-        </form>
+        </Form>
       )}
     </Formik>
   );
