@@ -80,6 +80,7 @@ export type OptionType = 'string' | 'directory' | 'files';
 
 export interface OptionSpec {
   id: string;
+  label: string;
   type: OptionType;
   required?: boolean;
   description?: string;

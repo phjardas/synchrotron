@@ -3,24 +3,28 @@ const { PluginManager } = require('synchrotron-core');
 
 const pluginManager = new PluginManager();
 
-ipcMain.on('get-plugins', async event => {
-  try {
+const methods = {
+  'get-plugins': async () => {
     const plugins = await pluginManager.plugins;
-    console.info('plugins:', plugins);
-    event.sender.send('get-plugins-reply', { plugins });
-  } catch (error) {
-    console.error(error);
-    event.sender.send('get-plugins-reply', { error });
-  }
-});
+    return { plugins };
+  },
+  'show-open-dialog': async (_, args) => {
+    const options = args;
+    const selection = dialog.showOpenDialog(options);
+    return { selection };
+  },
+};
 
-ipcMain.on('show-open-dialog', async event => {
-  try {
-    console.info('show-open-dialog:', event);
-    const selection = dialog.showOpenDialog({ title: 'Select directory', properties: ['openDirectory'] });
-    event.sender.send('show-open-dialog-reply', { selection });
-  } catch (error) {
-    console.error(error);
-    event.sender.send('show-open-dialog-reply', { error });
-  }
+Object.keys(methods).forEach(type => {
+  const handler = methods[type];
+  const reply = `${type}-reply`;
+
+  ipcMain.on(type, async (event, ...args) => {
+    try {
+      const result = await handler(event, ...args);
+      event.sender.send(reply, result);
+    } catch (error) {
+      event.sender.send(reply, { error });
+    }
+  });
 });

@@ -8,7 +8,9 @@
   "scripts": {
     "clean": "shx rm -rf build",
     "build": "npm run clean && react-scripts build",
-    "start": "concurrently --kill-others \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\""
+    "start:gui": "cross-env BROWSER=none react-scripts start",
+    "start:electron": "wait-on http://localhost:3000 && electron .",
+    "start": "concurrently --kill-others \"npm run start:gui\" \"npm run start:electron\""
   },
   "dependencies": {
     "@material-ui/core": "^4.1.1",

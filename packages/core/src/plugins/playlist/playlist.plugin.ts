@@ -7,6 +7,7 @@ class PlaylistLibraryAdapterExtension implements Extension {
   options: OptionSpec[] = [
     {
       id: 'playlist-files',
+      label: 'Playlist files',
       required: true,
       type: 'files',
       description: 'comma-separated path to M3U playlists',

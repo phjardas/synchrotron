@@ -7,6 +7,7 @@ class FilesystemTargetAdapterExtension implements Extension {
   options: OptionSpec[] = [
     {
       id: 'target-dir',
+      label: 'Target directory',
       type: 'directory',
       required: true,
       description: 'The target directory to which to synchronize files to',

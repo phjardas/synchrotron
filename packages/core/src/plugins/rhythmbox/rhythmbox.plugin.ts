@@ -7,18 +7,21 @@ class RhythmboxLibraryAdapterExtension implements Extension {
   options: OptionSpec[] = [
     {
       id: 'rhythmbox-config-dir',
+      label: 'Configuration directory',
       type: 'directory',
       required: true,
       description: 'path to the configuration directory of Rhythmbox, usually at `~/.local/share/rhythmbox`',
     },
     {
       id: 'rhythmbox-library-dir',
+      label: 'Library directory',
       type: 'directory',
       required: true,
       description: 'path to your music library, eg. `~/Music`',
     },
     {
       id: 'rhythmbox-playlists',
+      label: 'Playlists',
       type: 'string',
       required: false,
       description: 'names of playlists to synchronize, omit to synchronize all playlists',

@@ -29,8 +29,8 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
 }));
 
 const initialValues = {
-  'library-adapter': '',
-  'target-adapter': '',
+  'library-adapter': 'rhythmbox',
+  'target-adapter': 'filesystem',
 };
 
 export default function Form({ onSubmit }) {

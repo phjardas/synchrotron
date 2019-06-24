@@ -6,9 +6,10 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "start": "lerna run start --stream"
+    "start": "concurrently --kill-others \"lerna run watch --stream\" \"lerna run start --stream\""
   },
   "devDependencies": {
+    "concurrently": "^4.1.0",
     "lerna": "^3.15.0"
   }
 }
