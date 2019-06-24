@@ -16,7 +16,7 @@ class PlaylistLibraryAdapterExtension implements Extension {
 
   extend(engine: Engine, args: ParsedOptions): Engine {
     const opts: PlaylistOptions = {
-      playlistFiles: args['playlist-files'].split(/\s*,\s*/),
+      playlistFiles: args['playlist-files'].split(/\s*[,\n]\s*/),
     };
 
     engine.libraryAdapter = new PlaylistLibraryAdapter(opts);

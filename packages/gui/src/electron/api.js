@@ -1,5 +1,6 @@
 const { dialog, ipcMain } = require('electron');
 const { PluginManager } = require('synchrotron-core');
+require('./synchronize');
 
 const pluginManager = new PluginManager();
 
@@ -22,9 +23,9 @@ Object.keys(methods).forEach(type => {
 
     try {
       const result = await handler(event, ...args);
-      event.sender.send(reply, null, result);
+      event.reply(reply, null, result);
     } catch (error) {
-      event.sender.send(reply, error);
+      event.reply(reply, error);
     }
   });
 });

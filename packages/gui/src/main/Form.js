@@ -28,21 +28,21 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   },
 }));
 
-function createInitialValues(plugins) {
+function createInitialValues(plugins, options = {}) {
   const values = {
-    'library-adapter': 'rhythmbox',
-    'target-adapter': 'filesystem',
+    'library-adapter': '',
+    'target-adapter': '',
   };
 
   plugins.forEach(plugin => plugin.extensions.forEach(ext => ext.options.forEach(opt => (values[opt.id] = opt.defaultValue || ''))));
 
-  return values;
+  return { ...values, ...options };
 }
 
-export default function SynchronizeForm({ onSubmit }) {
+export default function SynchronizeForm({ options, onSubmit }) {
   const { loading, error, plugins } = usePlugins();
   const classes = useStyles();
-  const initialValues = useMemo(() => plugins && createInitialValues(plugins), [plugins]);
+  const initialValues = useMemo(() => plugins && createInitialValues(plugins, options), [plugins, options]);
 
   if (loading) return <CircularProgress />;
   if (error) return <div>Error: {error.message}</div>;

@@ -10,7 +10,7 @@ export function callMain(type, ...args) {
   const id = randomId();
 
   return new Promise((resolve, reject) => {
-    ipcRenderer.on(`${type}-reply-${id}`, (_, error, result) => {
+    ipcRenderer.once(`${type}-reply-${id}`, (_, error, result) => {
       if (error) {
         console.warn('reply %s [%s]:', type, id, error);
         reject(error);
@@ -23,6 +23,30 @@ export function callMain(type, ...args) {
     console.info('request %s [%s]:', type, id, args);
     ipcRenderer.send(type, id, ...args);
   });
+}
+
+export function synchronize(options) {
+  console.log('submit:', options);
+  const id = randomId();
+  const listeners = {};
+  const emit = (type, ...args) => (listeners[type] || []).forEach(listener => listener(...args));
+
+  const listener = (_, type, ...args) => {
+    emit(type, ...args);
+    if (type === 'done' || type === 'error') {
+      ipcRenderer.removeListener(`synchronize-${id}`, listener);
+    }
+  };
+
+  ipcRenderer.on(`synchronize-${id}`, listener);
+  ipcRenderer.send('synchronize', id, options);
+
+  return {
+    on(type, listener) {
+      (listeners[type] = listeners[type] || []).push(listener);
+      return this;
+    },
+  };
 }
 
 export async function showOpenDialog(options) {
