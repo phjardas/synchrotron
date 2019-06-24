@@ -3,18 +3,22 @@ import { useField, useFormikContext } from 'formik';
 import React, { useMemo } from 'react';
 import { usePlugins } from '../providers/Plugins';
 import ExtensionPointOptions from './ExtensionPointOptions';
+import { required } from '../utils/validation';
 
 export default function PluginSelect({ type, label = 'Type' }) {
   const { extensionPoints } = usePlugins();
   const { values } = useFormikContext();
-  const [field] = useField(type);
+  const [field] = useField({
+    name: type,
+    required,
+  });
 
   const value = useMemo(() => values[type], [values, type]);
   const extensionsPoint = useMemo(() => extensionPoints[type].find(e => e.id === value), [extensionPoints, type, value]);
 
   return (
     <>
-      <FormControl fullWidth margin="normal">
+      <FormControl fullWidth margin="normal" required>
         <InputLabel>{label}</InputLabel>
         <Select {...field}>
           {(extensionPoints[type] || [])

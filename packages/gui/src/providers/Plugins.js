@@ -1,8 +1,6 @@
 import React, { createContext, useEffect, useState, useContext } from 'react';
 import { callMain } from '../utils/electron';
 
-const { ipcRenderer } = window.require('electron');
-
 const Context = createContext();
 
 export function PluginsProvider({ children }) {

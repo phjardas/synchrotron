@@ -1,9 +1,10 @@
 import { TextField } from '@material-ui/core';
 import { useField } from 'formik';
 import React from 'react';
+import { required } from '../utils/validation';
 
 export default function ExtensionPointStringOption({ option }) {
-  const [field] = useField(option.id);
+  const [field] = useField({ name: option.id, validate: option.required && required });
 
   return (
     <TextField

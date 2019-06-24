@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
 }));
 
-export default function ExtensionPointDirectoryOption({ option }) {
+export default function ExtensionPointFilesOption({ option }) {
   const [field, meta] = useField({
     name: option.id,
     validate: option.required && required,
@@ -31,8 +31,12 @@ export default function ExtensionPointDirectoryOption({ option }) {
   const { name, onChange } = field;
 
   const onSelect = useCallback(async () => {
-    const selection = await showOpenDialog({ title: 'Select directory', properties: ['openDirectory'] });
-    const value = selection && selection.length ? selection[0] : '';
+    const selection = await showOpenDialog({
+      title: 'Select files',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Playlists (*.m3u, *.m3u8)', extensions: ['m3u', 'm3u8'] }],
+    });
+    const value = selection && selection.length ? selection.join('\n') : '';
     onChange({ target: { name, value } });
   }, [name, onChange]);
 
@@ -42,7 +46,7 @@ export default function ExtensionPointDirectoryOption({ option }) {
         {option.label}
       </FormLabel>
       <div className={classes.control}>
-        <Input {...field} fullWidth />
+        <Input {...field} fullWidth multiline />
         <Button type="button" onClick={onSelect}>
           select
         </Button>
