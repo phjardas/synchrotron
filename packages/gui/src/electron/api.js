@@ -8,8 +8,7 @@ const methods = {
     const plugins = await pluginManager.plugins;
     return { plugins };
   },
-  'show-open-dialog': async (_, args) => {
-    const options = args;
+  'show-open-dialog': async (_, options) => {
     const selection = dialog.showOpenDialog(options);
     return { selection };
   },
@@ -17,14 +16,15 @@ const methods = {
 
 Object.keys(methods).forEach(type => {
   const handler = methods[type];
-  const reply = `${type}-reply`;
 
-  ipcMain.on(type, async (event, ...args) => {
+  ipcMain.on(type, async (event, id, ...args) => {
+    const reply = `${type}-reply-${id}`;
+
     try {
       const result = await handler(event, ...args);
-      event.sender.send(reply, result);
+      event.sender.send(reply, null, result);
     } catch (error) {
-      event.sender.send(reply, { error });
+      event.sender.send(reply, error);
     }
   });
 });

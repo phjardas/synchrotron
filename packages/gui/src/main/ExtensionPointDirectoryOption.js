@@ -1,8 +1,7 @@
 import { Button, FormHelperText, FormLabel, Input, makeStyles } from '@material-ui/core';
 import { useField } from 'formik';
 import React, { useCallback } from 'react';
-
-const { ipcRenderer } = window.require('electron');
+import { openSelectDialog } from '../utils/electron';
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -21,23 +20,13 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
 }));
 
-function openSelectDialog() {
-  return new Promise((resolve, reject) => {
-    ipcRenderer.on('show-open-dialog-reply', (_, { error, selection }) => {
-      if (error) reject(error);
-      resolve(selection);
-    });
-    ipcRenderer.send('show-open-dialog', { title: 'Select directory', properties: ['openDirectory'] });
-  });
-}
-
 export default function ExtensionPointDirectoryOption({ option }) {
   const [field] = useField(option.id);
   const classes = useStyles();
   const { name, onChange } = field;
 
   const onSelect = useCallback(async () => {
-    const selection = await openSelectDialog();
+    const selection = await openSelectDialog({ title: 'Select directory', properties: ['openDirectory'] });
     const value = selection && selection.length ? selection[0] : '';
     onChange({ target: { name, value } });
   }, [name, onChange]);

@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState, useContext } from 'react';
+import { callMain } from '../utils/electron';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -8,16 +9,18 @@ export function PluginsProvider({ children }) {
   const [state, setState] = useState({ loading: true });
 
   useEffect(() => {
-    ipcRenderer.on('get-plugins-reply', (_, { plugins, error }) => {
-      const extensionPoints = {};
-      plugins.forEach(plugin =>
-        plugin.extensions.forEach(ext => (extensionPoints[ext.type] = extensionPoints[ext.type] || []).push({ ...ext, plugin }))
-      );
+    callMain('get-plugins')
+      .then(({ plugins }) => {
+        const extensionPoints = {};
+        plugins.forEach(plugin =>
+          plugin.extensions.forEach(ext => (extensionPoints[ext.type] = extensionPoints[ext.type] || []).push({ ...ext, plugin }))
+        );
 
-      setState({ plugins, extensionPoints, error, loading: false });
-    });
-
-    ipcRenderer.send('get-plugins');
+        setState({ plugins, extensionPoints, loading: false });
+      })
+      .catch(error => {
+        setState({ loading: false, error });
+      });
   }, []);
 
   return <Context.Provider value={state}>{children}</Context.Provider>;
