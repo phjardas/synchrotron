@@ -49,7 +49,7 @@ export default function SynchronizeForm({ options, onSubmit }) {
 
   return (
     <Formik onSubmit={onSubmit} initialValues={initialValues}>
-      {({ values, isValid, isSubmitting, isValidating }) => (
+      {({ isValid, isSubmitting, isValidating }) => (
         <Form className={classes.root}>
           <fieldset className={classes.section}>
             <legend>Source</legend>
@@ -64,7 +64,6 @@ export default function SynchronizeForm({ options, onSubmit }) {
               Synchronize
             </Button>
           </div>
-          <pre>{JSON.stringify(values, null, 2)}</pre>
         </Form>
       )}
     </Formik>

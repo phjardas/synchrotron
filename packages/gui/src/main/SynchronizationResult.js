@@ -43,7 +43,7 @@ export default function SynchronizationResult({ result, onReset }) {
   return (
     <div className={classes.root}>
       <Typography variant="h5" component="h2">
-        Done
+        Done!
       </Typography>
       <div className={classes.cards}>
         <Statistics title="Files" icon={FileIcon} stats={files} className={classes.card} />

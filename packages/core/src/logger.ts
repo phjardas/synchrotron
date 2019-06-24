@@ -1,4 +1,9 @@
-import * as ProgressBar from 'progress';
+import * as ProgressBarImpl from 'progress';
+
+export interface ProgressBar {
+  tick(count: number, context?: any): void;
+  terminate(): void;
+}
 
 export interface Logger {
   debug(message: any, ...args: any[]): void;
@@ -61,7 +66,7 @@ export function createLogger(options: LogOptions): Logger {
       const cols = process.stdout.columns;
       const width = cols - 40;
 
-      return new ProgressBar(pattern, {
+      return new ProgressBarImpl(pattern, {
         total,
         width,
         complete: '=',

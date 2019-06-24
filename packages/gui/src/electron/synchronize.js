@@ -35,14 +35,26 @@ async function createEngine(options) {
 
 function createLogger(reply) {
   const log = level => (...args) => reply('log', level, ...args);
+
   return {
     debug: log('debug'),
     info: log('info'),
     warn: log('warn'),
     error: log('error'),
     startProgress(total) {
-      // FIXME implement startProgress()
-      return null;
+      let completed = 0;
+      const onUpdate = context => reply('progress', { completed, total, context });
+      onUpdate();
+
+      return {
+        tick(count, context) {
+          completed += count;
+          onUpdate(context);
+        },
+        terminate() {
+          reply('progress', null);
+        },
+      };
     },
   };
 }

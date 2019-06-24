@@ -6,7 +6,7 @@ import SynchronizationResult from './SynchronizationResult';
 
 const defaultOptions = {
   'library-adapter': 'playlist',
-  'playlist-files': '/home/phjardas/Music/One.m3u8\n/home/phjardas/Music/Two.m3u8',
+  'playlist-files': '/media/phjardas/EB9F-D4F7/Hoerspiele.m3u8',
   'target-adapter': 'filesystem',
   'target-dir': '/home/phjardas/Music/tmp',
 };

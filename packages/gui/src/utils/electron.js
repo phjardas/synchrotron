@@ -26,7 +26,6 @@ export function callMain(type, ...args) {
 }
 
 export function synchronize(options) {
-  console.log('submit:', options);
   const id = randomId();
   const listeners = {};
   const emit = (type, ...args) => (listeners[type] || []).forEach(listener => listener(...args));
