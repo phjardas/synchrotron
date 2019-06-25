@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "sourceMap": false,
+    "declaration": true,
+    "module": "commonjs",
+    "target": "es2017",
+    "allowJs": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}
