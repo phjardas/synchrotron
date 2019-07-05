@@ -14,6 +14,8 @@
     "prepublishOnly": "npm run dist"
   },
   "dependencies": {
+    "bytes": "^3.0.0",
+    "humanize-duration": "^3.16.0",
     "synchrotron-core": "1.0.0",
     "yargs": "^13.2.4"
   },

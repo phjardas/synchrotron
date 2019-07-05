@@ -11,18 +11,21 @@ export class CreatePlaylistTask implements Task {
     const out = await this.targetAdapter.createWriter(this.filename, { encoding: 'utf8' });
     const content = this.playlist.songs.map(s => this.targetAdapter.getPlaylistPath(s.originalPath)).join('\n') + '\n';
 
-    await new Promise((resolve, reject) => {
-      out.on('finish', resolve);
-      out.on('error', reject);
-      out.write(content);
-      out.end();
-    });
+    try {
+      await new Promise((resolve, reject) => {
+        out.on('finish', resolve);
+        out.on('error', reject);
+        out.write(content);
+        out.end();
+      });
 
-    return { playlistsCreated: 1 };
+      return { playlists: [{ type: 'created', name: this.filename }] };
+    } catch (error) {
+      return { playlists: [{ type: 'failed', name: this.filename, error }] };
+    }
   }
 
   async dryRun(): Promise<TaskResult> {
-    console.log(`PLAYLIST: ${this.playlist.name}.m3u8`);
-    return { playlistsCreated: 1 };
+    return { playlists: [{ type: 'created', name: this.filename }] };
   }
 }

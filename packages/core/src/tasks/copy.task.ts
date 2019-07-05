@@ -1,4 +1,3 @@
-import * as bytes from 'bytes';
 import { Song, TargetAdapter, Task, TaskResult } from '../model';
 
 export class CopyTask implements Task {
@@ -8,7 +7,7 @@ export class CopyTask implements Task {
     try {
       const { skip, size } = await this.getStats();
       if (skip) {
-        return { filesUnchanged: 1 };
+        return { files: [{ type: 'unchanged', name: this.song.originalPath }] };
       }
 
       const [reader, writer] = await Promise.all([this.song.open(), this.targetAdapter.createWriter(this.song.originalPath)]);
@@ -19,22 +18,18 @@ export class CopyTask implements Task {
         reader.pipe(writer);
       });
 
-      return { filesCreated: 1, bytesTransferred: size };
-    } catch (err) {
-      console.error('Error copying: ' + err, err);
-      return { filesFailed: 1 };
+      return { files: [{ type: 'created', name: this.song.originalPath, bytesTransferred: size }] };
+    } catch (error) {
+      return { files: [{ type: 'failed', name: this.song.originalPath, error }] };
     }
   }
 
   async dryRun(): Promise<TaskResult> {
     const { skip, size } = await this.getStats();
-    if (skip) {
-      console.log('SKIP: %s', this.song.originalPath);
-      return { filesUnchanged: 1 };
-    }
 
-    console.log('COPY: %s (%s)', this.song.originalPath, bytes(size));
-    return { filesCreated: 1, bytesTransferred: size };
+    return skip
+      ? { files: [{ type: 'unchanged', name: this.song.originalPath }] }
+      : { files: [{ type: 'created', name: this.song.originalPath, bytesTransferred: size }] };
   }
 
   private async getStats(): Promise<{ skip: boolean; size: number }> {

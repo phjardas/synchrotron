@@ -8,7 +8,6 @@ export function parseMainOptions(args: string[]): Options {
     quiet: argv.quiet,
     extensions: argv,
     dryRun: argv.dryRun || false,
-    noProgress: argv.noProgress || false,
   };
 }
 
@@ -17,7 +16,6 @@ export function createOptionsParser(args: string[]): yargs.Arguments<any> {
     .option('verbose', { alias: 'v', boolean: true })
     .option('quiet', { alias: 'q', boolean: true })
     .option('dry-run', { boolean: true })
-    .option('no-progress', { boolean: true })
     .option('library-adapter', { demandOption: true })
     .option('target-adapter', { default: 'filesystem' })
     .config();

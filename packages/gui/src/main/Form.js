@@ -1,6 +1,6 @@
-import { Button, Card, CardContent, CircularProgress, Typography } from '@material-ui/core';
+import { Button, Card, CardContent, CircularProgress, Switch, Typography, FormControlLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Form, Formik } from 'formik';
+import { Form, Formik, useField } from 'formik';
 import React, { useMemo } from 'react';
 import { usePlugins } from '../providers/Plugins';
 import Actions from './Actions';
@@ -17,6 +17,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 function createInitialValues(plugins, options = {}) {
   const values = {
+    dryRun: false,
     'library-adapter': '',
     'target-adapter': '',
   };
@@ -53,6 +54,7 @@ export default function SynchronizeForm({ options, onSubmit }) {
             </Card>
           </div>
           <Actions>
+            <DryRunSwitch />
             <Button variant="contained" color="primary" type="submit" disabled={!isValid || isSubmitting || isValidating}>
               Synchronize
             </Button>
@@ -61,4 +63,9 @@ export default function SynchronizeForm({ options, onSubmit }) {
       )}
     </Formik>
   );
+}
+
+function DryRunSwitch() {
+  const [field] = useField({ name: 'dryRun', type: 'checkbox' });
+  return <FormControlLabel control={<Switch {...field} />} label="dry run" />;
 }

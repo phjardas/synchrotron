@@ -1,5 +1,10 @@
 import { Readable, Writable } from 'stream';
 
+export interface Task {
+  execute(): Promise<TaskResult>;
+  dryRun(): Promise<TaskResult>;
+}
+
 export interface FileStats {
   readonly exists: boolean;
   readonly size?: number;
@@ -42,22 +47,41 @@ export interface TargetAdapter {
   deleteFile(path: string): Promise<void>;
 }
 
+export type FileCreated = {
+  type: 'created';
+  name: string;
+  bytesTransferred?: number;
+};
+export type FileDeleted = {
+  type: 'deleted';
+  name: string;
+};
+export type FileUnchanged = {
+  type: 'unchanged';
+  name: string;
+};
+export type FileFailed = {
+  type: 'failed';
+  name: string;
+  error: Error;
+};
+export type FileResult = FileCreated | FileDeleted | FileUnchanged | FileFailed;
+
 export interface TaskResult {
-  readonly filesCreated?: number;
-  readonly filesDeleted?: number;
-  readonly filesUnchanged?: number;
-  readonly filesFailed?: number;
-  readonly playlistsCreated?: number;
-  readonly playlistsDeleted?: number;
-  readonly playlistsUnchanged?: number;
-  readonly bytesTransferred?: number;
-  readonly timeMillis?: number;
+  readonly files?: FileResult[];
+  readonly playlists?: FileResult[];
+}
+
+export interface SynchronizationResult {
+  readonly files: FileResult[];
+  readonly playlists: FileResult[];
+  readonly timeMillis: number;
 }
 
 export interface Engine {
   libraryAdapter: LibraryAdapter;
   targetAdapter: TargetAdapter;
-  execute(): Promise<TaskResult>;
+  execute(): Promise<SynchronizationResult>;
 }
 
 export interface Plugin {

@@ -1,6 +1,4 @@
-import * as bytes from 'bytes';
-import * as duration from 'humanize-duration';
-import { Engine, EngineOptions, LibraryAdapter, TargetAdapter, Task, TaskResult } from './model';
+import { Engine, EngineOptions, LibraryAdapter, SynchronizationResult, TargetAdapter, Task, TaskResult } from './model';
 import { CopyTask, CreatePlaylistTask, DeleteTask } from './tasks';
 
 interface TaskGroup {
@@ -16,7 +14,7 @@ export class Synchrotron implements Engine {
 
   constructor(private readonly options: EngineOptions) {}
 
-  async execute(): Promise<TaskResult> {
+  async execute(): Promise<SynchronizationResult> {
     const { logger } = this.options;
 
     try {
@@ -24,7 +22,6 @@ export class Synchrotron implements Engine {
       logger.debug('analyzing...');
       const groups = await this.createTaskGroups();
       const results = await this.executeTaskGroups(groups);
-      this.printResults(results);
       return results;
     } catch (err) {
       logger.error('Error:', err);
@@ -51,9 +48,9 @@ export class Synchrotron implements Engine {
     return groups;
   }
 
-  private async executeTaskGroups(groups: TaskGroup[]): Promise<TaskResult> {
+  private async executeTaskGroups(groups: TaskGroup[]): Promise<SynchronizationResult> {
     const { logger } = this.options;
-    let progress = this.options.noProgress ? null : logger.startProgress(groups.reduce((a, g) => a + g.tasks.length, 0));
+    let progress = logger.startProgress(groups.reduce((a, g) => a + g.tasks.length, 0));
     let results: TaskResult[] = [];
     const startedAt = Date.now();
 
@@ -70,52 +67,23 @@ export class Synchrotron implements Engine {
 
     progress && progress.terminate();
 
-    return { ...this.mergeResults(results), timeMillis: Date.now() - startedAt };
+    return mergeResults(results, Date.now() - startedAt);
   }
 
   private executeTask(task: Task): Promise<TaskResult> {
-    if (this.options.dryRun) {
-      return task.dryRun();
-    }
-
-    return task.execute();
+    return this.options.dryRun ? task.dryRun() : task.execute();
   }
+}
 
-  private mergeResults(results: TaskResult[]): TaskResult {
-    return results.reduce(
+function mergeResults(results: TaskResult[], timeMillis: number): SynchronizationResult {
+  return {
+    ...results.reduce(
       (a, b) => ({
-        filesCreated: (a.filesCreated || 0) + (b.filesCreated || 0),
-        filesDeleted: (a.filesDeleted || 0) + (b.filesDeleted || 0),
-        filesUnchanged: (a.filesUnchanged || 0) + (b.filesUnchanged || 0),
-        filesFailed: (a.filesFailed || 0) + (b.filesFailed || 0),
-        playlistsCreated: (a.playlistsCreated || 0) + (b.playlistsCreated || 0),
-        playlistsDeleted: (a.playlistsDeleted || 0) + (b.playlistsDeleted || 0),
-        playlistsUnchanged: (a.playlistsUnchanged || 0) + (b.playlistsUnchanged || 0),
-        bytesTransferred: (a.bytesTransferred || 0) + (b.bytesTransferred || 0),
-        timeMillis: (a.timeMillis || 0) + (b.timeMillis || 0),
+        files: [...(a.files || []), ...(b.files || [])],
+        playlists: [...(a.playlists || []), ...(b.playlists || [])],
       }),
       {}
-    );
-  }
-
-  private printResults(results: TaskResult) {
-    const { logger } = this.options;
-
-    logger.info('\n');
-    logger.info(
-      'Files: %d created, %d unchanged, %d deleted, %d failed',
-      results.filesCreated,
-      results.filesUnchanged,
-      results.filesDeleted,
-      results.filesFailed
-    );
-    logger.info(
-      'Playlists: %d created, %d unchanged, %d deleted',
-      results.playlistsCreated,
-      results.playlistsUnchanged,
-      results.playlistsDeleted
-    );
-    logger.info('Total transferred: %s', bytes(results.bytesTransferred));
-    logger.info('Total duration: %s', duration(results.timeMillis));
-  }
+    ),
+    timeMillis,
+  } as SynchronizationResult;
 }

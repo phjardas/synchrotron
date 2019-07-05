@@ -5,12 +5,10 @@ export class DeleteTask implements Task {
 
   async execute(): Promise<TaskResult> {
     await this.targetAdapter.deleteFile(this.file);
-
-    return { filesDeleted: 1 };
+    return { files: [{ type: 'deleted', name: this.file }] };
   }
 
   async dryRun(): Promise<TaskResult> {
-    console.log('DELETE: %s', this.file);
-    return { filesDeleted: 1 };
+    return { files: [{ type: 'deleted', name: this.file }] };
   }
 }

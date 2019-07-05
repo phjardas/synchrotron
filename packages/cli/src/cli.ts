@@ -1,4 +1,15 @@
-import { createLogger, Engine, Extension, ParsedOptions, PluginManager, Synchrotron } from 'synchrotron-core';
+import * as bytes from 'bytes';
+import * as duration from 'humanize-duration';
+import {
+  createLogger,
+  Engine,
+  Extension,
+  FileResult,
+  ParsedOptions,
+  PluginManager,
+  SynchronizationResult,
+  Synchrotron,
+} from 'synchrotron-core';
 import { Arguments } from 'yargs';
 import { createOptionsParser, parseMainOptions } from './options';
 
@@ -41,18 +52,31 @@ function applyCommandLineOptions(extension: Extension, engine: Engine, opts: Par
 
 export async function main(argv: string[] = process.argv) {
   try {
-    let engine;
-    try {
-      engine = await createEngine(argv);
-    } catch (err) {
-      console.error('Error creating Synchrotron engine:', err);
-      throw err;
-    }
-
-    await engine.execute();
+    const engine = await createEngine(argv);
+    const results = await engine.execute();
+    printResults(results);
   } catch (err) {
     process.exit(err.code || 1);
   }
+}
+
+function printResults(results: SynchronizationResult) {
+  console.log('\n');
+  printStatistics('Files', results.files);
+  printStatistics('Playlists', results.playlists);
+  console.log('Total transferred: %s', bytes(results.bytesTransferred));
+  console.log('Total duration: %s', duration(results.timeMillis));
+}
+
+function printStatistics(label: string, results: FileResult[]) {
+  console.log(
+    '%s: %d created, %d unchanged, %d deleted, %d failed',
+    label,
+    results.filter(r => r.type === 'created').length,
+    results.filter(r => r.type === 'unchanged').length,
+    results.filter(r => r.type === 'deleted').length,
+    results.filter(r => r.type === 'failed').length
+  );
 }
 
 main();
