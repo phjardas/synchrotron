@@ -14,7 +14,7 @@ ipcMain.on('synchronize', async (event, id, options) => {
     reply('done', result);
   } catch (error) {
     console.error(error);
-    reply('error', error);
+    reply('error', { ...error, message: error.message });
   }
 });
 
@@ -34,7 +34,7 @@ async function createEngine(options) {
 }
 
 function createLogger(reply) {
-  const log = level => (...args) => reply('log', level, ...args);
+  const log = level => (...args) => reply('log', Date.now(), level, ...args);
 
   return {
     debug: log('debug'),

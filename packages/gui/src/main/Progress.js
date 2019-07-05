@@ -1,28 +1,14 @@
 import { LinearProgress, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 
-const useStyles = makeStyles(() => ({
-  root: {},
-  task: {},
-  label: {},
-  progress: {},
-}));
-
-export default function Progress({ task, completed, total }) {
-  const classes = useStyles();
-
+export default function Progress({ task, completed, total, ...props }) {
   return (
-    <div className={classes.root}>
-      {task && (
-        <Typography variant="caption" className={classes.task}>
-          {task}
-        </Typography>
-      )}
-      <Typography variant="body1" className={classes.label}>
+    <div {...props}>
+      <LinearProgress variant="determinate" value={(completed / total) * 100} />
+      <Typography variant="caption">
+        {task && `${task}: `}
         {completed} of {total}
       </Typography>
-      <LinearProgress variant="determinate" value={(completed / total) * 100} className={classes.progress} />
     </div>
   );
 }

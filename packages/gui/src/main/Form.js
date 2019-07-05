@@ -1,30 +1,17 @@
-import { Button, CircularProgress } from '@material-ui/core';
+import { Button, Card, CardContent, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Form, Formik } from 'formik';
 import React, { useMemo } from 'react';
 import { usePlugins } from '../providers/Plugins';
+import Actions from './Actions';
 import PluginSelect from './PluginSelect';
 
-const useStyles = makeStyles(({ spacing, typography }) => ({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  section: {
-    width: '50%',
-    margin: 0,
-    padding: spacing(3),
-    border: 'none',
-    '& legend': {
-      ...typography.h5,
-      paddingTop: spacing(3),
-    },
-  },
-  actions: {
-    width: '100%',
-    padding: spacing(3),
-    display: 'flex',
-    justifyContent: 'flex-end',
+const useStyles = makeStyles(({ spacing }) => ({
+  grid: {
+    display: 'grid',
+    gridGap: spacing(2),
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    margin: spacing(2),
   },
 }));
 
@@ -50,20 +37,26 @@ export default function SynchronizeForm({ options, onSubmit }) {
   return (
     <Formik onSubmit={onSubmit} initialValues={initialValues}>
       {({ isValid, isSubmitting, isValidating }) => (
-        <Form className={classes.root}>
-          <fieldset className={classes.section}>
-            <legend>Source</legend>
-            <PluginSelect type="library-adapter" />
-          </fieldset>
-          <fieldset className={classes.section}>
-            <legend>Target</legend>
-            <PluginSelect type="target-adapter" />
-          </fieldset>
-          <div className={classes.actions}>
+        <Form>
+          <div className={classes.grid}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5">Source</Typography>
+                <PluginSelect type="library-adapter" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h5">Target</Typography>
+                <PluginSelect type="target-adapter" />
+              </CardContent>
+            </Card>
+          </div>
+          <Actions>
             <Button variant="contained" color="primary" type="submit" disabled={!isValid || isSubmitting || isValidating}>
               Synchronize
             </Button>
-          </div>
+          </Actions>
         </Form>
       )}
     </Formik>
