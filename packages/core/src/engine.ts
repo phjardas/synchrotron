@@ -1,5 +1,6 @@
 import { Engine, EngineOptions, LibraryAdapter, SynchronizationResult, TargetAdapter, Task, TaskResult } from './model';
 import { CopyTask, CreatePlaylistTask, DeleteTask } from './tasks';
+import * as Queue from 'promise-queue';
 
 interface TaskGroup {
   readonly label: string;
@@ -9,6 +10,7 @@ interface TaskGroup {
 export class Synchrotron implements Engine {
   static extensionPoints = ['library-adapter', 'target-adapter'];
 
+  private queue = new Queue(4);
   libraryAdapter: LibraryAdapter;
   targetAdapter: TargetAdapter;
 
@@ -57,7 +59,7 @@ export class Synchrotron implements Engine {
     for (const { label, tasks } of groups) {
       const groupResults = await Promise.all(
         tasks.map(async t => {
-          const result = await this.executeTask(t);
+          const result = await this.scheduleTask(t);
           progress && progress.tick(1, { task: label });
           return result;
         })
@@ -68,6 +70,10 @@ export class Synchrotron implements Engine {
     progress && progress.terminate();
 
     return mergeResults(results, Date.now() - startedAt);
+  }
+
+  private scheduleTask(task: Task): Promise<TaskResult> {
+    return this.queue.add(() => this.executeTask(task));
   }
 
   private executeTask(task: Task): Promise<TaskResult> {

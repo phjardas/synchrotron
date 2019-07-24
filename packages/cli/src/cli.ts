@@ -9,6 +9,7 @@ import {
   PluginManager,
   SynchronizationResult,
   Synchrotron,
+  FileCreated,
 } from 'synchrotron-core';
 import { Arguments } from 'yargs';
 import { createOptionsParser, parseMainOptions } from './options';
@@ -64,7 +65,15 @@ function printResults(results: SynchronizationResult) {
   console.log('\n');
   printStatistics('Files', results.files);
   printStatistics('Playlists', results.playlists);
-  console.log('Total transferred: %s', bytes(results.bytesTransferred));
+  console.log(
+    'Total transferred: %s',
+    bytes(
+      results.files
+        .filter(f => f.type === 'created')
+        .map((f: FileCreated) => f.bytesTransferred)
+        .reduce((a, b) => a + b, 0)
+    )
+  );
   console.log('Total duration: %s', duration(results.timeMillis));
 }
 
