@@ -31,7 +31,7 @@ export class PlaylistLibraryAdapter implements LibraryAdapter {
   private async parsePlaylist(file: string): Promise<Playlist> {
     const dir = path.dirname(file);
     const data = await readFile(file, 'utf-8');
-    const songs = data
+    const songs = stripBom(data)
       .split(/\r?\n/)
       .filter(s => !!s.trim())
       .map(s => new FileSystemSong(path.resolve(dir, s), s));
@@ -41,4 +41,12 @@ export class PlaylistLibraryAdapter implements LibraryAdapter {
       songs,
     };
   }
+}
+
+function stripBom(string: string) {
+  if (string.charCodeAt(0) === 0xfeff) {
+    return string.slice(1);
+  }
+
+  return string;
 }
