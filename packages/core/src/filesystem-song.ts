@@ -17,8 +17,8 @@ export class FileSystemSong implements Song {
           size: stats.size,
         };
       } catch (err) {
-        if (err.code !== 'ENOENT') throw err;
-        return { exists: false };
+        if (err.code === 'ENOENT') return { exists: false };
+        throw err;
       }
     })();
   }

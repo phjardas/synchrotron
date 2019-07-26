@@ -5,16 +5,20 @@ export class CopyTask implements Task {
 
   async execute(): Promise<TaskResult> {
     try {
-      const { skip, size } = await this.getStats();
+      const { sourceExists, skip, size } = await this.getStats();
       if (skip) {
         return { files: [{ type: 'unchanged', name: this.song.originalPath }] };
+      }
+      if (!sourceExists) {
+        throw new Error(`Source file not found`);
       }
 
       const [reader, writer] = await Promise.all([this.song.open(), this.targetAdapter.createWriter(this.song.originalPath)]);
 
       await new Promise((resolve, reject) => {
-        writer.on('finish', resolve);
+        writer.on('close', resolve);
         writer.on('error', reject);
+        reader.on('error', reject);
         reader.pipe(writer);
       });
 
@@ -32,11 +36,12 @@ export class CopyTask implements Task {
       : { files: [{ type: 'created', name: this.song.originalPath, bytesTransferred: size }] };
   }
 
-  private async getStats(): Promise<{ skip: boolean; size: number }> {
+  private async getStats(): Promise<{ sourceExists; skip: boolean; size: number }> {
     const sourceStats = await this.song.fileStats;
     const targetStats = await this.targetAdapter.getFileStats(this.song.originalPath);
 
     return {
+      sourceExists: sourceStats.exists,
       skip: sourceStats.exists && targetStats.exists && sourceStats.size === targetStats.size,
       size: sourceStats.size,
     };

@@ -34,6 +34,7 @@ export class PlaylistLibraryAdapter implements LibraryAdapter {
     const songs = stripBom(data)
       .split(/\r?\n/)
       .filter(s => !!s.trim())
+      .map(s => s.replace(/\\/g, '/'))
       .map(s => new FileSystemSong(path.resolve(dir, s), s));
 
     return {

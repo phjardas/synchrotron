@@ -6,6 +6,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "build:cli": "lerna run build --scope synchrotron-core --scope synchrotron-cli",
     "start": "concurrently --kill-others \"lerna run watch --stream\" \"lerna run start --stream\""
   },
   "devDependencies": {
