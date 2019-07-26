@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require('electron');
+const path = require('path');
 const isDev = require('electron-is-dev');
 
 let mainWindow;
@@ -20,7 +21,7 @@ function createWindow() {
 
   mainWindow.on('closed', () => (mainWindow = null));
 
-  require('./api');
+  require('./electron/api');
 }
 
 app.on('ready', createWindow);

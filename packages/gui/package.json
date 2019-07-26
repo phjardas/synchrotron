@@ -6,8 +6,9 @@
   "homepage": ".",
   "main": "src/electron",
   "scripts": {
-    "clean": "shx rm -rf build",
-    "build": "npm run clean && react-scripts build",
+    "clean": "shx rm -rf build dist",
+    "build": "npm run clean && react-scripts build && cp -r src/electron* build && electron-builder",
+    "pack": "npm run build -- --dir -c.compression=store -c.mac.identity=null",
     "start:gui": "cross-env BROWSER=none react-scripts start",
     "start:electron": "wait-on http://localhost:3000 && electron .",
     "start": "concurrently --kill-others \"npm run start:gui\" \"npm run start:electron\""
@@ -29,7 +30,7 @@
     "cross-env": "^5.2.0",
     "devtron": "^1.4.0",
     "electron": "^5.0.4",
-    "electron-builder": "^20.43.0",
+    "electron-builder": "^21.1.5",
     "react-scripts": "3.0.1",
     "shx": "^0.3.2",
     "wait-on": "^3.2.0"

@@ -1,0 +1,9 @@
+appId: de.jardas.synchrotron
+productName: synchrotron
+mac:
+  category: public.app-category.music
+linux:
+  category: Audio
+snap:
+  confinement: devmode
+  grade: devel
