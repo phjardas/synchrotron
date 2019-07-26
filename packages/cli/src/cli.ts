@@ -1,17 +1,6 @@
-import * as bytes from 'bytes';
-import * as duration from 'humanize-duration';
-import {
-  createLogger,
-  Engine,
-  Extension,
-  FileResult,
-  ParsedOptions,
-  PluginManager,
-  SynchronizationResult,
-  Synchrotron,
-  FileCreated,
-} from 'synchrotron-core';
+import { Engine, Extension, ParsedOptions, PluginManager, SynchronizationResult, Synchrotron } from 'synchrotron-core';
 import { Arguments } from 'yargs';
+import { createLogger } from './logger';
 import { createOptionsParser, parseMainOptions } from './options';
 
 async function createEngine(args: string[]): Promise<Engine> {
@@ -28,8 +17,6 @@ async function createEngine(args: string[]): Promise<Engine> {
   );
 
   const opts = extensions.reduce((a, e) => addCommandLineOptions(a, e), createOptionsParser(args)).argv;
-
-  opts.logger = createLogger(opts);
 
   return extensions.reduce((engine, ex) => applyCommandLineOptions(ex, engine, opts), new Synchrotron(opts));
 }
@@ -54,38 +41,15 @@ function applyCommandLineOptions(extension: Extension, engine: Engine, opts: Par
 export async function main(argv: string[] = process.argv) {
   try {
     const engine = await createEngine(argv);
-    const results = await engine.execute();
-    printResults(results);
+    await new Promise<SynchronizationResult>((resolve, reject) => {
+      const execution = engine.execute();
+      createLogger(execution);
+      execution.on('error', reject);
+      execution.on('done', resolve);
+    });
   } catch (err) {
     process.exit(err.code || 1);
   }
-}
-
-function printResults(results: SynchronizationResult) {
-  console.log('\n');
-  printStatistics('Files', results.files);
-  printStatistics('Playlists', results.playlists);
-  console.log(
-    'Total transferred: %s',
-    bytes(
-      results.files
-        .filter(f => f.type === 'created')
-        .map((f: FileCreated) => f.bytesTransferred)
-        .reduce((a, b) => a + b, 0)
-    )
-  );
-  console.log('Total duration: %s', duration(results.timeMillis));
-}
-
-function printStatistics(label: string, results: FileResult[]) {
-  console.log(
-    '%s: %d created, %d unchanged, %d deleted, %d failed',
-    label,
-    results.filter(r => r.type === 'created').length,
-    results.filter(r => r.type === 'unchanged').length,
-    results.filter(r => r.type === 'deleted').length,
-    results.filter(r => r.type === 'failed').length
-  );
 }
 
 main();

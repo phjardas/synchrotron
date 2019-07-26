@@ -81,7 +81,48 @@ export interface SynchronizationResult {
 export interface Engine {
   libraryAdapter: LibraryAdapter;
   targetAdapter: TargetAdapter;
-  execute(): Promise<SynchronizationResult>;
+  execute(): Execution;
+}
+
+export type EventListener<T> = (payload: T) => any;
+
+export type TaskGroupStartedEvent = {
+  type: 'task_group_started';
+  label: string;
+  groupIndex: number;
+  groupCount: number;
+  taskCount: number;
+};
+
+export type TaskGroupCompletedEvent = {
+  type: 'task_group_completed';
+  groupIndex: number;
+};
+
+export type TaskStartedEvent = {
+  type: 'task_started';
+  taskIndex: number;
+  taskCount: number;
+  task: Task;
+};
+
+export type TaskCompletedEvent = {
+  type: 'task_completed';
+  taskIndex: number;
+};
+
+export type TaskFailedEvent = {
+  type: 'task_failed';
+  taskIndex: number;
+  error: Error;
+};
+
+export type Event = TaskGroupStartedEvent | TaskGroupCompletedEvent | TaskStartedEvent | TaskCompletedEvent | TaskFailedEvent;
+
+export interface Execution {
+  on(event: 'done', listener: EventListener<SynchronizationResult>);
+  on(event: 'data', listener: EventListener<Event>);
+  on(event: 'error', listener: EventListener<Error>);
 }
 
 export interface Plugin {

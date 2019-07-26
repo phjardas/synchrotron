@@ -1,19 +1,8 @@
-import { Card, CardContent, List, ListItem, ListItemText, Typography } from '@material-ui/core';
+import { Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { synchronize } from '../utils/electron';
 import Progress from './Progress';
-
-function formatLogMessage(message, args) {
-  let i = 0;
-  const ret = message.replace(/%[sd]/g, () => args[i++]);
-  return i >= args.length
-    ? ret
-    : `${ret} ${args
-        .slice(i)
-        .map(JSON.stringify)
-        .join(', ')}`;
-}
 
 const useStyles = makeStyles(({ spacing }) => ({
   card: {
@@ -27,24 +16,30 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
 }));
 
+function reducer(state, action) {
+  switch (action.type) {
+    case 'task_group_started':
+      return { task: action.label, completed: 0, total: action.taskCount };
+    case 'task_group_completed':
+      return {};
+    case 'task_completed':
+    case 'task_failed':
+      return { ...state, completed: (state.completed || 0) + 1 };
+    default:
+      return state;
+  }
+}
+
 export default function Synchronization({ options, onComplete }) {
   const classes = useStyles();
-  const [progress, setProgress] = useState({ context: { task: 'foobar' }, completed: 12, total: 80 });
-  const [logs, setLogs] = useState([]);
+  const [state, dispatch] = useReducer(reducer, {});
 
   useEffect(() => {
-    const start = Date.now();
     synchronize(options)
-      .on('log', (timestamp, level, message, ...args) => {
-        console.log('log:', { timestamp, level, message, args });
-        if (message.trim().length) {
-          setLogs(prev => [...prev, { elapsed: timestamp - start, level, message, args }]);
-        }
-      })
-      .on('progress', setProgress)
+      .on('data', dispatch)
       .on('done', result => onComplete({ result }))
       .on('error', error => onComplete({ error }));
-  }, [options, onComplete, setLogs]);
+  }, [options, onComplete]);
 
   return (
     <>
@@ -53,39 +48,9 @@ export default function Synchronization({ options, onComplete }) {
           <Typography variant="h5" component="h2">
             Synchronizing…
           </Typography>
-          {progress && (
-            <Progress
-              task={progress.context && progress.context.task}
-              completed={progress.completed}
-              total={progress.total}
-              className={classes.progress}
-            />
-          )}
+          {state.total > 0 && <Progress task={state.task} completed={state.completed} total={state.total} className={classes.progress} />}
         </CardContent>
       </Card>
-      {logs.length > 0 && (
-        <Card className={classes.card}>
-          <CardContent>
-            <Typography variant="h5" component="h2">
-              Log
-            </Typography>
-          </CardContent>
-          <List dense>
-            {logs.map((log, i) => (
-              <ListItem key={i}>
-                <ListItemText
-                  primary={formatLogMessage(log.message, log.args)}
-                  secondary={
-                    <>
-                      {log.elapsed} ms - {log.level}
-                    </>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Card>
-      )}
     </>
   );
 }

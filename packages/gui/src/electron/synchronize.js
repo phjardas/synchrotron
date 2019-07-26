@@ -5,13 +5,14 @@ ipcMain.on('synchronize', async (event, id, options) => {
   const reply = (...args) => event.reply(`synchronize-${id}`, ...args);
 
   try {
-    const opts = {
-      ...options,
-      logger: createLogger(reply),
-    };
-    const engine = await createEngine(opts);
-    const result = await engine.execute();
-    reply('done', result);
+    const engine = await createEngine(options);
+    const execution = engine.execute();
+    execution.on('data', event => reply('data', event));
+    execution.on('done', result => reply('done', result));
+    execution.on('error', error => {
+      console.error(error);
+      reply('error', { ...error, message: error.message });
+    });
   } catch (error) {
     console.error(error);
     reply('error', { ...error, message: error.message });
@@ -31,30 +32,4 @@ async function createEngine(options) {
   );
 
   return extensions.reduce((engine, ex) => ex.extend(engine, options), new Synchrotron(options));
-}
-
-function createLogger(reply) {
-  const log = level => (...args) => reply('log', Date.now(), level, ...args);
-
-  return {
-    debug: log('debug'),
-    info: log('info'),
-    warn: log('warn'),
-    error: log('error'),
-    startProgress(total) {
-      let completed = 0;
-      const onUpdate = context => reply('progress', { completed, total, context });
-      onUpdate();
-
-      return {
-        tick(count, context) {
-          completed += count;
-          onUpdate(context);
-        },
-        terminate() {
-          reply('progress', null);
-        },
-      };
-    },
-  };
 }
