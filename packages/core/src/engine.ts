@@ -81,11 +81,13 @@ class ExecutionImpl implements Execution {
     const createPlaylistTasks = library.playlists.map(p => new CreatePlaylistTask(p, this.targetAdapter));
     if (createPlaylistTasks.length) groups.push({ label: 'playlists', tasks: createPlaylistTasks });
 
-    const deleteFiles = await this.targetAdapter.getFilesToDelete([
-      ...library.songs.map(s => s.originalPath),
-      ...createPlaylistTasks.map(t => t.filename),
-    ]);
-    if (deleteFiles.length) groups.push({ label: 'deleting', tasks: deleteFiles.map(f => new DeleteTask(f, this.targetAdapter)) });
+    if (!this.options.skipDelete) {
+      const deleteFiles = await this.targetAdapter.getFilesToDelete([
+        ...library.songs.map(s => s.originalPath),
+        ...createPlaylistTasks.map(t => t.filename),
+      ]);
+      if (deleteFiles.length) groups.push({ label: 'deleting', tasks: deleteFiles.map(f => new DeleteTask(f, this.targetAdapter)) });
+    }
 
     return groups;
   }

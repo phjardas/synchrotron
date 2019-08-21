@@ -6,12 +6,14 @@ export function parseMainOptions(args: string[]): Options {
   return {
     extensions: argv,
     dryRun: argv.dryRun || false,
+    skipDelete: argv.skipDelete || false,
   };
 }
 
 export function createOptionsParser(args: string[]): yargs.Arguments<any> {
   return yargs(args)
     .option('dry-run', { boolean: true })
+    .option('skip-delete', { boolean: true })
     .option('library-adapter', { demandOption: true })
     .option('target-adapter', { default: 'filesystem' })
     .config();
